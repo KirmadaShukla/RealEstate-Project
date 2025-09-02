@@ -7,6 +7,7 @@ const cookieParser = require('cookie-parser');
 require('dotenv').config();
 const { generatedErrors } = require('./middlewares/error');
 const adminRouter = require('./routes/adminRoute');
+const siteSettingsRouter = require('./routes/siteSettingsRoute');
 const connectDB = require('./models/config');
 
 const app = express();
@@ -34,6 +35,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/v1/admin',adminRouter)
+app.use('/api/v1/site-settings',siteSettingsRouter)
 
 
 app.all('*', (req, res) => {
