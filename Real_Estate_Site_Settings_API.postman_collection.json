@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Real Estate Complete API Collection",
-    "description": "Complete API collection for Real Estate platform including Authentication, Admin Management, and Site Settings with Cloudinary integration",
+    "description": "Complete API collection for Real Estate platform including Authentication, Admin Management, Site Settings, Blogs with Cloudinary integration",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -32,6 +32,11 @@
     },
     {
       "key": "imageId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "blogId",
       "value": "",
       "type": "string"
     }
@@ -205,6 +210,147 @@
       ]
     },
     {
+      "name": "📰 Blog Management",
+      "description": "Manage blog posts with Cloudinary image integration",
+      "item": [
+        {
+          "name": "Get All Blogs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/blogs",
+              "host": ["{{baseUrl}}"],
+              "path": ["blogs"]
+            },
+            "description": "Get all active blog posts (Public endpoint)"
+          }
+        },
+        {
+          "name": "Get Blog by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/blogs/{{blogId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["blogs", "{{blogId}}"]
+            },
+            "description": "Get a specific blog post by ID (Public endpoint)"
+          }
+        },
+        {
+          "name": "Create New Blog",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('blogId', response.blog._id);",
+                  "    pm.test('Blog created successfully', () => {",
+                  "        pm.expect(response.success).to.be.true;",
+                  "        pm.expect(response.blog).to.exist;",
+                  "    });",
+                  "    console.log('📝 Blog created with ID:', response.blog._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "value": "New Real Estate Investment Trends in 2024",
+                  "type": "text",
+                  "description": "Blog title"
+                },
+                {
+                  "key": "content",
+                  "value": "In this comprehensive guide, we explore the latest trends in real estate investment for 2024, including sustainable properties, smart home technology, and emerging markets.",
+                  "type": "text",
+                  "description": "Blog content"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": "",
+                  "description": "Blog featured image"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/blogs",
+              "host": ["{{baseUrl}}"],
+              "path": ["blogs"]
+            },
+            "description": "Create a new blog post (Admin only)"
+          }
+        },
+        {
+          "name": "Update Blog",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "value": "Updated: New Real Estate Investment Trends in 2024",
+                  "type": "text",
+                  "description": "Updated blog title"
+                },
+                {
+                  "key": "content",
+                  "value": "In this comprehensive and updated guide, we explore the latest trends in real estate investment for 2024, including sustainable properties, smart home technology, emerging markets, and AI-driven property valuation.",
+                  "type": "text",
+                  "description": "Updated blog content"
+                },
+                {
+                  "key": "isActive",
+                  "value": "true",
+                  "type": "text",
+                  "description": "Set blog active status"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": "",
+                  "description": "Replace blog featured image"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/blogs/{{blogId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["blogs", "{{blogId}}"]
+            },
+            "description": "Update an existing blog post (Admin only)"
+          }
+        },
+        {
+          "name": "Delete Blog",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/blogs/{{blogId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["blogs", "{{blogId}}"]
+            },
+            "description": "Delete a blog post (Admin only)"
+          }
+        }
+      ]
+    },
+    {
       "name": "⚙️ Site Settings - General",
       "description": "General site settings management",
       "item": [
@@ -302,10 +448,11 @@
       ]
     },
     {
-      "name": "Projects Management",
+      "name": "🏢 Projects Management",
+      "description": "Manage all projects with flexible project types",
       "item": [
         {
-          "name": "Get All Projects Summary",
+          "name": "Get All Projects",
           "request": {
             "method": "GET",
             "header": [],
@@ -313,82 +460,68 @@
               "raw": "{{baseUrl}}/site-settings/projects",
               "host": ["{{baseUrl}}"],
               "path": ["site-settings", "projects"]
-            }
+            },
+            "description": "Get all active projects (Public endpoint)"
           }
         },
         {
-          "name": "Get Residential Projects",
+          "name": "Get Project by ID",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/site-settings/projects/residential",
+              "raw": "{{baseUrl}}/site-settings/projects/{{projectId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["site-settings", "projects", "residential"]
-            }
+              "path": ["site-settings", "projects", "{{projectId}}"]
+            },
+            "description": "Get a specific project by ID (Public endpoint)"
           }
         },
         {
-          "name": "Get Commercial Projects",
+          "name": "Get Projects by Type",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/site-settings/projects/commercial",
+              "raw": "{{baseUrl}}/site-settings/projects/type/{{projectType}}",
               "host": ["{{baseUrl}}"],
-              "path": ["site-settings", "projects", "commercial"]
-            }
+              "path": ["site-settings", "projects", "type", "{{projectType}}"]
+            },
+            "description": "Get projects by type (Public endpoint)"
           }
         },
         {
-          "name": "Get Lands Projects",
+          "name": "Get All Project Types",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/site-settings/projects/lands",
+              "raw": "{{baseUrl}}/site-settings/project-types",
               "host": ["{{baseUrl}}"],
-              "path": ["site-settings", "projects", "lands"]
-            }
-          }
-        },
-        {
-          "name": "Get OD Projects",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/site-settings/projects/odProjects",
-              "host": ["{{baseUrl}}"],
-              "path": ["site-settings", "projects", "odProjects"]
-            }
-          }
-        },
-        {
-          "name": "Get OSUS Eyes Projects",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/site-settings/projects/osusEyes",
-              "host": ["{{baseUrl}}"],
-              "path": ["site-settings", "projects", "osusEyes"]
-            }
+              "path": ["site-settings", "project-types"]
+            },
+            "description": "Get all project types with counts (Public endpoint)"
           }
         }
       ]
     },
     {
-      "name": "Projects - Add New",
+      "name": "➕ Projects - Add New",
       "item": [
         {
-          "name": "Add Residential Project",
+          "name": "Add New Project",
           "request": {
             "method": "POST",
             "header": [],
             "body": {
               "mode": "formdata",
               "formdata": [
+                {
+                  "key": "projectType",
+                  "value": "residential",
+                  "type": "text",
+                  "description": "Project type (can be any value)"
+                },
                 {
                   "key": "title",
                   "value": "Green Valley Apartments",
@@ -412,65 +545,22 @@
                 {
                   "key": "heroImage",
                   "type": "file",
-                  "src": "",
-                  "description": "Project hero image"
+                  "src": ""
                 }
               ]
             },
             "url": {
-              "raw": "{{baseUrl}}/site-settings/projects/residential",
+              "raw": "{{baseUrl}}/site-settings/projects",
               "host": ["{{baseUrl}}"],
-              "path": ["site-settings", "projects", "residential"]
-            }
-          }
-        },
-        {
-          "name": "Add Commercial Project",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "title",
-                  "value": "Business Center Plaza",
-                  "type": "text"
-                },
-                {
-                  "key": "description",
-                  "value": "Modern commercial complex with office spaces and retail outlets.",
-                  "type": "text"
-                },
-                {
-                  "key": "location",
-                  "value": "Delhi, India",
-                  "type": "text"
-                },
-                {
-                  "key": "status",
-                  "value": "Planning",
-                  "type": "text"
-                },
-                {
-                  "key": "heroImage",
-                  "type": "file",
-                  "src": "",
-                  "description": "Project hero image"
-                }
-              ]
+              "path": ["site-settings", "projects"]
             },
-            "url": {
-              "raw": "{{baseUrl}}/site-settings/projects/commercial",
-              "host": ["{{baseUrl}}"],
-              "path": ["site-settings", "projects", "commercial"]
-            }
+            "description": "Add a new project with flexible project type (Admin only)"
           }
         }
       ]
     },
     {
-      "name": "Projects - Update",
+      "name": "✏️ Projects - Update",
       "item": [
         {
           "name": "Update Project",
@@ -481,18 +571,24 @@
               "mode": "formdata",
               "formdata": [
                 {
+                  "key": "projectType",
+                  "value": "commercial",
+                  "type": "text",
+                  "description": "Updated project type"
+                },
+                {
                   "key": "title",
-                  "value": "Updated Project Name",
+                  "value": "Updated Green Valley Commercial Complex",
                   "type": "text"
                 },
                 {
                   "key": "description",
-                  "value": "Updated project description",
+                  "value": "Updated luxury commercial complex with modern amenities including conference halls, cafeteria, and parking.",
                   "type": "text"
                 },
                 {
                   "key": "location",
-                  "value": "Updated Location",
+                  "value": "Delhi, India",
                   "type": "text"
                 },
                 {
@@ -501,45 +597,53 @@
                   "type": "text"
                 },
                 {
+                  "key": "isActive",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
                   "key": "heroImage",
                   "type": "file",
                   "src": "",
-                  "description": "New hero image (optional)"
+                  "description": "Replace project hero image"
                 }
               ]
             },
             "url": {
-              "raw": "{{baseUrl}}/site-settings/projects/residential/{{projectId}}",
+              "raw": "{{baseUrl}}/site-settings/projects/{{projectId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["site-settings", "projects", "residential", "{{projectId}}"]
-            }
+              "path": ["site-settings", "projects", "{{projectId}}"]
+            },
+            "description": "Update an existing project (Admin only)"
           }
         },
         {
-          "name": "Update Project Section Title",
+          "name": "Update Projects Section Title",
           "request": {
             "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [],
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"sectionTitle\": \"Premium Residential Projects\"\n}"
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "sectionTitle",
+                  "value": "Our Projects",
+                  "type": "text"
+                }
+              ]
             },
             "url": {
-              "raw": "{{baseUrl}}/site-settings/projects/residential/section-title",
+              "raw": "{{baseUrl}}/site-settings/projects/section-title",
               "host": ["{{baseUrl}}"],
-              "path": ["site-settings", "projects", "residential", "section-title"]
-            }
+              "path": ["site-settings", "projects", "section-title"]
+            },
+            "description": "Update the main projects section title (Admin only)"
           }
         }
       ]
     },
     {
-      "name": "Projects - Delete",
+      "name": "🗑️ Projects - Delete",
       "item": [
         {
           "name": "Delete Project",
@@ -547,145 +651,11 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/site-settings/projects/residential/{{projectId}}",
+              "raw": "{{baseUrl}}/site-settings/projects/{{projectId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["site-settings", "projects", "residential", "{{projectId}}"]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Gallery Management",
-      "item": [
-        {
-          "name": "Add Image to Gallery",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "image",
-                  "type": "file",
-                  "src": "",
-                  "description": "Gallery image file"
-                },
-                {
-                  "key": "caption",
-                  "value": "Beautiful swimming pool area with modern design",
-                  "type": "text"
-                }
-              ]
+              "path": ["site-settings", "projects", "{{projectId}}"]
             },
-            "url": {
-              "raw": "{{baseUrl}}/site-settings/projects/residential/{{projectId}}/gallery",
-              "host": ["{{baseUrl}}"],
-              "path": ["site-settings", "projects", "residential", "{{projectId}}", "gallery"]
-            }
-          }
-        },
-        {
-          "name": "Remove Image from Gallery",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/site-settings/projects/residential/{{projectId}}/gallery/{{imageId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["site-settings", "projects", "residential", "{{projectId}}", "gallery", "{{imageId}}"]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "🏢 Projects Management",
-      "description": "Manage all project types and their content",
-      "item": [
-        {
-          "name": "Get All Projects Summary",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/site-settings/projects",
-              "host": ["{{baseUrl}}"],
-              "path": ["site-settings", "projects"]
-            },
-            "description": "Get summary of all project sections with counts"
-          }
-        },
-        {
-          "name": "Get Residential Projects",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/site-settings/projects/residential",
-              "host": ["{{baseUrl}}"],
-              "path": ["site-settings", "projects", "residential"]
-            }
-          }
-        },
-        {
-          "name": "Get Commercial Projects",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/site-settings/projects/commercial",
-              "host": ["{{baseUrl}}"],
-              "path": ["site-settings", "projects", "commercial"]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "➕ Projects - Add New",
-      "item": [
-        {
-          "name": "Add Residential Project",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "title",
-                  "value": "Green Valley Apartments",
-                  "type": "text"
-                },
-                {
-                  "key": "description",
-                  "value": "Luxury residential complex",
-                  "type": "text"
-                },
-                {
-                  "key": "location",
-                  "value": "Mumbai, Maharashtra",
-                  "type": "text"
-                },
-                {
-                  "key": "status",
-                  "value": "Under Construction",
-                  "type": "text"
-                },
-                {
-                  "key": "heroImage",
-                  "type": "file",
-                  "src": ""
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{baseUrl}}/site-settings/projects/residential",
-              "host": ["{{baseUrl}}"],
-              "path": ["site-settings", "projects", "residential"]
-            }
+            "description": "Delete a project and its associated Cloudinary assets (Admin only)"
           }
         }
       ]
@@ -714,10 +684,11 @@
               ]
             },
             "url": {
-              "raw": "{{baseUrl}}/site-settings/projects/residential/{{projectId}}/gallery",
+              "raw": "{{baseUrl}}/site-settings/projects/{{projectId}}/gallery",
               "host": ["{{baseUrl}}"],
-              "path": ["site-settings", "projects", "residential", "{{projectId}}", "gallery"]
-            }
+              "path": ["site-settings", "projects", "{{projectId}}", "gallery"]
+            },
+            "description": "Add an image to project gallery (Admin only)"
           }
         },
         {
@@ -726,10 +697,11 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/site-settings/projects/residential/{{projectId}}/gallery/{{imageId}}",
+              "raw": "{{baseUrl}}/site-settings/projects/{{projectId}}/gallery/{{imageId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["site-settings", "projects", "residential", "{{projectId}}", "gallery", "{{imageId}}"]
-            }
+              "path": ["site-settings", "projects", "{{projectId}}", "gallery", "{{imageId}}"]
+            },
+            "description": "Remove an image from project gallery (Admin only)"
           }
         }
       ]

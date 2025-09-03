@@ -130,39 +130,28 @@ exports.updateAboutUsSection = catchAsyncErrors(async (req, res, next) => {
     });
 });
 
-// Get projects by type
-exports.getProjectsByType = catchAsyncErrors(async (req, res, next) => {
-    const { projectType } = req.params;
-    
-    const validTypes = ['residential', 'commercial', 'lands', 'odProjects', 'osusEyes'];
-    if (!validTypes.includes(projectType)) {
-        return next(new ErrorHandler('Invalid project type', 400));
-    }
-    
+// Get all projects
+exports.getAllProjects = catchAsyncErrors(async (req, res, next) => {
     const siteSettings = await SiteSettings.getActiveSiteSettings();
     
     if (!siteSettings) {
         return next(new ErrorHandler('Site settings not found', 404));
     }
     
-    const projects = siteSettings.getActiveProjectsByType(projectType);
+    const projects = siteSettings.getActiveProjects();
     
     res.status(200).json({
         success: true,
-        projectType,
-        sectionTitle: siteSettings.projectsSection[projectType].sectionTitle,
         projects
     });
 });
 
 // Add new project
 exports.addProject = catchAsyncErrors(async (req, res, next) => {
-    const { projectType } = req.params;
-    const { title, description, location } = req.body;
+    const { projectType, title, description, location } = req.body;
     
-    const validTypes = ['residential', 'commercial', 'lands', 'odProjects', 'osusEyes'];
-    if (!validTypes.includes(projectType)) {
-        return next(new ErrorHandler('Invalid project type', 400));
+    if (!projectType) {
+        return next(new ErrorHandler('Project type is required', 400));
     }
     
     if (!title) {
@@ -177,6 +166,7 @@ exports.addProject = catchAsyncErrors(async (req, res, next) => {
     
     // Prepare project data
     const projectData = {
+        projectType,
         title,
         description: description || '',
         location: location || '',
@@ -197,11 +187,11 @@ exports.addProject = catchAsyncErrors(async (req, res, next) => {
     }
     
     try {
-        await siteSettings.addProject(projectType, projectData);
+        await siteSettings.addProject(projectData);
         
         res.status(201).json({
             success: true,
-            message: `Project added to ${projectType} section successfully`,
+            message: 'Project added successfully',
             project: projectData
         });
     } catch (error) {
@@ -211,13 +201,8 @@ exports.addProject = catchAsyncErrors(async (req, res, next) => {
 
 // Update project
 exports.updateProject = catchAsyncErrors(async (req, res, next) => {
-    const { projectType, projectId } = req.params;
-    const { title, description, location, status, isActive } = req.body;
-    
-    const validTypes = ['residential', 'commercial', 'lands', 'odProjects', 'osusEyes'];
-    if (!validTypes.includes(projectType)) {
-        return next(new ErrorHandler('Invalid project type', 400));
-    }
+    const { projectId } = req.params;
+    const { projectType, title, description, location, status, isActive } = req.body;
     
     const siteSettings = await SiteSettings.getActiveSiteSettings();
     
@@ -225,13 +210,14 @@ exports.updateProject = catchAsyncErrors(async (req, res, next) => {
         return next(new ErrorHandler('Site settings not found', 404));
     }
     
-    const project = siteSettings.getProjectById(projectType, projectId);
+    const project = siteSettings.getProjectById(projectId);
     
     if (!project) {
         return next(new ErrorHandler('Project not found', 404));
     }
     
     // Update text fields
+    if (projectType !== undefined) project.projectType = projectType;
     if (title !== undefined) project.title = title;
     if (description !== undefined) project.description = description;
     if (location !== undefined) project.location = location;
@@ -247,7 +233,7 @@ exports.updateProject = catchAsyncErrors(async (req, res, next) => {
             }
             
             // Upload new hero image
-            const heroImageResult = await uploadToCloudinary(req.files.heroImage, `realestate/projects/${projectType}`);
+            const heroImageResult = await uploadToCloudinary(req.files.heroImage, `realestate/projects/${project.projectType || 'general'}`);
             project.heroImage = heroImageResult;
         } catch (error) {
             return next(new ErrorHandler(error.message, 400));
@@ -266,12 +252,7 @@ exports.updateProject = catchAsyncErrors(async (req, res, next) => {
 
 // Delete project
 exports.deleteProject = catchAsyncErrors(async (req, res, next) => {
-    const { projectType, projectId } = req.params;
-    
-    const validTypes = ['residential', 'commercial', 'lands', 'odProjects', 'osusEyes'];
-    if (!validTypes.includes(projectType)) {
-        return next(new ErrorHandler('Invalid project type', 400));
-    }
+    const { projectId } = req.params;
     
     const siteSettings = await SiteSettings.getActiveSiteSettings();
     
@@ -281,7 +262,7 @@ exports.deleteProject = catchAsyncErrors(async (req, res, next) => {
     
     try {
         // Get the project to delete associated Cloudinary files
-        const project = siteSettings.getProjectById(projectType, projectId);
+        const project = siteSettings.getProjectById(projectId);
         if (!project) {
             return next(new ErrorHandler('Project not found', 404));
         }
@@ -301,7 +282,7 @@ exports.deleteProject = catchAsyncErrors(async (req, res, next) => {
         }
         
         // Remove project from database
-        await siteSettings.removeProject(projectType, projectId);
+        await siteSettings.removeProject(projectId);
         
         res.status(200).json({
             success: true,
@@ -314,13 +295,8 @@ exports.deleteProject = catchAsyncErrors(async (req, res, next) => {
 
 // Add image to gallery
 exports.addImageToGallery = catchAsyncErrors(async (req, res, next) => {
-    const { projectType, projectId } = req.params;
+    const { projectId } = req.params;
     const { caption } = req.body;
-    
-    const validTypes = ['residential', 'commercial', 'lands', 'odProjects', 'osusEyes'];
-    if (!validTypes.includes(projectType)) {
-        return next(new ErrorHandler('Invalid project type', 400));
-    }
     
     if (!req.files || !req.files.image) {
         return next(new ErrorHandler('Image file is required', 400));
@@ -334,14 +310,14 @@ exports.addImageToGallery = catchAsyncErrors(async (req, res, next) => {
     
     try {
         // Upload image to cloudinary
-        const imageResult = await uploadToCloudinary(req.files.image, `realestate/projects/${projectType}/gallery`);
+        const imageResult = await uploadToCloudinary(req.files.image, `realestate/projects/gallery`);
         
         const imageData = { 
             image: imageResult, 
             caption: caption || '' 
         };
         
-        await siteSettings.addToProjectGallery(projectType, projectId, imageData);
+        await siteSettings.addToProjectGallery(projectId, imageData);
         
         res.status(201).json({
             success: true,
@@ -355,12 +331,7 @@ exports.addImageToGallery = catchAsyncErrors(async (req, res, next) => {
 
 // Remove image from gallery
 exports.removeImageFromGallery = catchAsyncErrors(async (req, res, next) => {
-    const { projectType, projectId, imageId } = req.params;
-    
-    const validTypes = ['residential', 'commercial', 'lands', 'odProjects', 'osusEyes'];
-    if (!validTypes.includes(projectType)) {
-        return next(new ErrorHandler('Invalid project type', 400));
-    }
+    const { projectId, imageId } = req.params;
     
     const siteSettings = await SiteSettings.getActiveSiteSettings();
     
@@ -370,7 +341,7 @@ exports.removeImageFromGallery = catchAsyncErrors(async (req, res, next) => {
     
     try {
         // Get the image to delete from cloudinary
-        const project = siteSettings.getProjectById(projectType, projectId);
+        const project = siteSettings.getProjectById(projectId);
         if (project) {
             const imageToDelete = project.gallery.id(imageId);
             if (imageToDelete && imageToDelete.image.fileId) {
@@ -378,7 +349,7 @@ exports.removeImageFromGallery = catchAsyncErrors(async (req, res, next) => {
             }
         }
         
-        await siteSettings.removeFromProjectGallery(projectType, projectId, imageId);
+        await siteSettings.removeFromProjectGallery(projectId, imageId);
         
         res.status(200).json({
             success: true,
@@ -389,15 +360,9 @@ exports.removeImageFromGallery = catchAsyncErrors(async (req, res, next) => {
     }
 });
 
-// Update project section title
-exports.updateProjectSectionTitle = catchAsyncErrors(async (req, res, next) => {
-    const { projectType } = req.params;
+// Update projects section title
+exports.updateProjectsSectionTitle = catchAsyncErrors(async (req, res, next) => {
     const { sectionTitle } = req.body;
-    
-    const validTypes = ['residential', 'commercial', 'lands', 'odProjects', 'osusEyes'];
-    if (!validTypes.includes(projectType)) {
-        return next(new ErrorHandler('Invalid project type', 400));
-    }
     
     if (!sectionTitle) {
         return next(new ErrorHandler('Section title is required', 400));
@@ -409,50 +374,68 @@ exports.updateProjectSectionTitle = catchAsyncErrors(async (req, res, next) => {
         return next(new ErrorHandler('Site settings not found', 404));
     }
     
-    siteSettings.projectsSection[projectType].sectionTitle = sectionTitle;
+    siteSettings.projectsSection.sectionTitle = sectionTitle;
     siteSettings.lastUpdatedBy = req.id;
     await siteSettings.save();
     
     res.status(200).json({
         success: true,
-        message: `${projectType} section title updated successfully`,
+        message: 'Projects section title updated successfully',
         sectionTitle
     });
 });
 
-// Get all projects sections summary
-exports.getAllProjectsSections = catchAsyncErrors(async (req, res, next) => {
+// Get all project types with count
+exports.getAllProjectTypes = catchAsyncErrors(async (req, res, next) => {
     const siteSettings = await SiteSettings.getActiveSiteSettings();
     
     if (!siteSettings) {
         return next(new ErrorHandler('Site settings not found', 404));
     }
     
-    const projectsSummary = {
-        residential: {
-            sectionTitle: siteSettings.projectsSection.residential.sectionTitle,
-            projectCount: siteSettings.getActiveProjectsByType('residential').length
-        },
-        commercial: {
-            sectionTitle: siteSettings.projectsSection.commercial.sectionTitle,
-            projectCount: siteSettings.getActiveProjectsByType('commercial').length
-        },
-        lands: {
-            sectionTitle: siteSettings.projectsSection.lands.sectionTitle,
-            projectCount: siteSettings.getActiveProjectsByType('lands').length
-        },
-        odProjects: {
-            sectionTitle: siteSettings.projectsSection.odProjects.sectionTitle,
-            projectCount: siteSettings.getActiveProjectsByType('odProjects').length
-        },
-        osusEyes: {
-            sectionTitle: siteSettings.projectsSection.osusEyes.sectionTitle,
-            projectCount: siteSettings.getActiveProjectsByType('osusEyes').length
+    // Get all unique project types
+    const allProjects = siteSettings.getActiveProjects();
+    const projectTypes = {};
+    
+    allProjects.forEach(project => {
+        if (projectTypes[project.projectType]) {
+            projectTypes[project.projectType].count++;
+        } else {
+            projectTypes[project.projectType] = {
+                sectionTitle: project.projectType,
+                count: 1
+            };
         }
-    };
+    });
     
     res.status(200).json({
         success: true,
-        projectsSummary
+        projectTypes
+    });
+});
+
+// Get project by ID
+exports.getProjectById = catchAsyncErrors(async (req, res, next) => {
+    const { projectId } = req.params;
+    
+    const siteSettings = await SiteSettings.getActiveSiteSettings();
+    
+    if (!siteSettings) {
+        return next(new ErrorHandler('Site settings not found', 404));
+    }
+    
+    const project = siteSettings.getProjectById(projectId);
+    
+    if (!project) {
+        return next(new ErrorHandler('Project not found', 404));
+    }
+    
+    if (!project.isActive) {
+        return next(new ErrorHandler('Project is not active', 404));
+    }
+    
+    res.status(200).json({
+        success: true,
+        project
     });
 });

@@ -61,278 +61,68 @@ const siteSettingsSchema = new mongoose.Schema({
         }
     },
 
-    // Projects Section
+    // Projects Section - Simplified to allow any project type
     projectsSection: {
-        // Residential Projects
-        residential: {
-            sectionTitle: {
-                type: String,
-                default: 'Residential Projects',
-                maxlength: [100, 'Residential section title cannot exceed 100 characters']
-            },
-            projects: [{
-                title: {
-                    type: String,
-                    required: [true, 'Project title is required'],
-                    maxlength: [150, 'Project title cannot exceed 150 characters']
-                },
-                description: {
-                    type: String,
-                    maxlength: [500, 'Project description cannot exceed 500 characters']
-                },
-                heroImage: {
-                    url: {
-                        type: String,
-                        default: ''
-                    },
-                    fileId: {
-                        type: String,
-                        default: ''
-                    }
-                },
-                gallery: [{
-                    image: {
-                        url: {
-                            type: String,
-                            required: true
-                        },
-                        fileId: {
-                            type: String,
-                            required: true
-                        }
-                    },
-                    caption: {
-                        type: String,
-                        maxlength: [200, 'Caption cannot exceed 200 characters']
-                    }
-                }],
-                location: {
-                    type: String,
-                    maxlength: [100, 'Location cannot exceed 100 characters']
-                },
-                status: {
-                    type: String,
-                    enum: ['Planning', 'Under Construction', 'Completed', 'On Hold'],
-                    default: 'Planning'
-                },
-                isActive: {
-                    type: Boolean,
-                    default: true
-                }
-            }]
+        sectionTitle: {
+            type: String,
+            default: 'Projects',
+            maxlength: [100, 'Projects section title cannot exceed 100 characters']
         },
-
-        // Commercial Projects
-        commercial: {
-            sectionTitle: {
+        projects: [{
+            projectType: {
                 type: String,
-                default: 'Commercial Projects',
-                maxlength: [100, 'Commercial section title cannot exceed 100 characters']
+                required: [true, 'Project type is required'],
+                maxlength: [50, 'Project type cannot exceed 50 characters']
             },
-            projects: [{
-                title: {
-                    type: String,
-                    required: [true, 'Project title is required'],
-                    maxlength: [150, 'Project title cannot exceed 150 characters']
-                },
-                description: {
-                    type: String,
-                    maxlength: [500, 'Project description cannot exceed 500 characters']
-                },
-                heroImage: {
-                    url: {
-                        type: String,
-                        default: ''
-                    },
-                    fileId: {
-                        type: String,
-                        default: ''
-                    }
-                },
-                gallery: [{
-                    image: {
-                        url: {
-                            type: String,
-                            required: true
-                        },
-                        fileId: {
-                            type: String,
-                            required: true
-                        }
-                    },
-                    caption: {
-                        type: String,
-                        maxlength: [200, 'Caption cannot exceed 200 characters']
-                    }
-                }],
-                location: {
-                    type: String,
-                    maxlength: [100, 'Location cannot exceed 100 characters']
-                },
-            }]
-        },
-
-        // Lands Projects
-        lands: {
-            sectionTitle: {
+            title: {
                 type: String,
-                default: 'Lands',
-                maxlength: [100, 'Lands section title cannot exceed 100 characters']
+                required: [true, 'Project title is required'],
+                maxlength: [150, 'Project title cannot exceed 150 characters']
             },
-            projects: [{
-                title: {
+            description: {
+                type: String,
+                maxlength: [500, 'Project description cannot exceed 500 characters']
+            },
+            heroImage: {
+                url: {
                     type: String,
-                    required: [true, 'Project title is required'],
-                    maxlength: [150, 'Project title cannot exceed 150 characters']
+                    default: ''
                 },
-                description: {
+                fileId: {
                     type: String,
-                    maxlength: [500, 'Project description cannot exceed 500 characters']
-                },
-                heroImage: {
-                    url: {
-                        type: String,
-                        default: ''
-                    },
-                    fileId: {
-                        type: String,
-                        default: ''
-                    }
-                },
-                gallery: [{
-                    image: {
-                        url: {
-                            type: String,
-                            required: true
-                        },
-                        fileId: {
-                            type: String,
-                            required: true
-                        }
-                    },
-                    caption: {
-                        type: String,
-                        maxlength: [200, 'Caption cannot exceed 200 characters']
-                    }
-                }],
-                location: {
-                    type: String,
-                    maxlength: [100, 'Location cannot exceed 100 characters']
-                },
-                isActive: {
-                    type: Boolean,
-                    default: true
+                    default: ''
                 }
-            }]
-        },
-
-        // OD Projects
-        odProjects: {
-            sectionTitle: {
-                type: String,
-                default: 'OD Projects',
-                maxlength: [100, 'OD Projects section title cannot exceed 100 characters']
             },
-            projects: [{
-                title: {
-                    type: String,
-                    required: [true, 'Project title is required'],
-                    maxlength: [150, 'Project title cannot exceed 150 characters']
-                },
-                description: {
-                    type: String,
-                    maxlength: [500, 'Project description cannot exceed 500 characters']
-                },
-                heroImage: {
+            gallery: [{
+                image: {
                     url: {
                         type: String,
-                        default: ''
+                        required: true
                     },
                     fileId: {
                         type: String,
-                        default: ''
+                        required: true
                     }
                 },
-                gallery: [{
-                    image: {
-                        url: {
-                            type: String,
-                            required: true
-                        },
-                        fileId: {
-                            type: String,
-                            required: true
-                        }
-                    },
-                    caption: {
-                        type: String,
-                        maxlength: [200, 'Caption cannot exceed 200 characters']
-                    }
-                }],
-                location: {
+                caption: {
                     type: String,
-                    maxlength: [100, 'Location cannot exceed 100 characters']
-                },
-                isActive: {
-                    type: Boolean,
-                    default: true
+                    maxlength: [200, 'Caption cannot exceed 200 characters']
                 }
-            }]
-        },
-
-        // OSUS Eyes Projects
-        osusEyes: {
-            sectionTitle: {
+            }],
+            location: {
                 type: String,
-                default: 'OSUS Eyes',
-                maxlength: [100, 'OSUS Eyes section title cannot exceed 100 characters']
+                maxlength: [100, 'Location cannot exceed 100 characters']
             },
-            projects: [{
-                title: {
-                    type: String,
-                    required: [true, 'Project title is required'],
-                    maxlength: [150, 'Project title cannot exceed 150 characters']
-                },
-                description: {
-                    type: String,
-                    maxlength: [500, 'Project description cannot exceed 500 characters']
-                },
-                heroImage: {
-                    url: {
-                        type: String,
-                        default: ''
-                    },
-                    fileId: {
-                        type: String,
-                        default: ''
-                    }
-                },
-                gallery: [{
-                    image: {
-                        url: {
-                            type: String,
-                            required: true
-                        },
-                        fileId: {
-                            type: String,
-                            required: true
-                        }
-                    },
-                    caption: {
-                        type: String,
-                        maxlength: [200, 'Caption cannot exceed 200 characters']
-                    }
-                }],
-                location: {
-                    type: String,
-                    maxlength: [100, 'Location cannot exceed 100 characters']
-                },
-                isActive: {
-                    type: Boolean,
-                    default: true
-                }
-            }]
-        }
+            status: {
+                type: String,
+                enum: ['Planning', 'Under Construction', 'Completed', 'On Hold'],
+                default: 'Planning'
+            },
+            isActive: {
+                type: Boolean,
+                default: true
+            }
+        }]
     },
 
     // Meta Information
@@ -358,68 +148,55 @@ siteSettingsSchema.statics.getActiveSiteSettings = async function() {
     return await this.findOne({ isActive: true });
 };
 
-// Method to add project to a section
-siteSettingsSchema.methods.addProject = function(projectType, projectData) {
-    if (this.projectsSection[projectType] && this.projectsSection[projectType].projects) {
-        this.projectsSection[projectType].projects.push(projectData);
-        return this.save();
-    }
-    throw new Error(`Invalid project type: ${projectType}`);
+// Method to add project
+siteSettingsSchema.methods.addProject = function(projectData) {
+    this.projectsSection.projects.push(projectData);
+    return this.save();
 };
 
-// Method to remove project from a section
-siteSettingsSchema.methods.removeProject = function(projectType, projectId) {
-    if (this.projectsSection[projectType] && this.projectsSection[projectType].projects) {
-        const project = this.projectsSection[projectType].projects.id(projectId);
-        if (project) {
-            this.projectsSection[projectType].projects.pull(projectId);
-            return this.save();
-        }
-        throw new Error(`Project not found with id: ${projectId}`);
+// Method to remove project
+siteSettingsSchema.methods.removeProject = function(projectId) {
+    const project = this.projectsSection.projects.id(projectId);
+    if (project) {
+        this.projectsSection.projects.pull(projectId);
+        return this.save();
     }
-    throw new Error(`Invalid project type: ${projectType}`);
+    throw new Error(`Project not found with id: ${projectId}`);
 };
 
 // Method to add image to project gallery
-siteSettingsSchema.methods.addToProjectGallery = function(projectType, projectId, imageData) {
-    if (this.projectsSection[projectType] && this.projectsSection[projectType].projects) {
-        const project = this.projectsSection[projectType].projects.id(projectId);
-        if (project) {
-            project.gallery.push(imageData);
-            return this.save();
-        }
-        throw new Error(`Project not found with id: ${projectId}`);
+siteSettingsSchema.methods.addToProjectGallery = function(projectId, imageData) {
+    const project = this.projectsSection.projects.id(projectId);
+    if (project) {
+        project.gallery.push(imageData);
+        return this.save();
     }
-    throw new Error(`Invalid project type: ${projectType}`);
+    throw new Error(`Project not found with id: ${projectId}`);
 };
 
 // Method to remove image from project gallery
-siteSettingsSchema.methods.removeFromProjectGallery = function(projectType, projectId, imageId) {
-    if (this.projectsSection[projectType] && this.projectsSection[projectType].projects) {
-        const project = this.projectsSection[projectType].projects.id(projectId);
-        if (project) {
-            project.gallery.pull(imageId);
-            return this.save();
-        }
-        throw new Error(`Project not found with id: ${projectId}`);
+siteSettingsSchema.methods.removeFromProjectGallery = function(projectId, imageId) {
+    const project = this.projectsSection.projects.id(projectId);
+    if (project) {
+        project.gallery.pull(imageId);
+        return this.save();
     }
-    throw new Error(`Invalid project type: ${projectType}`);
+    throw new Error(`Project not found with id: ${projectId}`);
 };
 
-// Method to get active projects by type
-siteSettingsSchema.methods.getActiveProjectsByType = function(projectType) {
-    if (this.projectsSection[projectType] && this.projectsSection[projectType].projects) {
-        return this.projectsSection[projectType].projects.filter(project => project.isActive);
-    }
-    return [];
+// Method to get active projects
+siteSettingsSchema.methods.getActiveProjects = function() {
+    return this.projectsSection.projects.filter(project => project.isActive);
 };
 
 // Method to get project by ID
-siteSettingsSchema.methods.getProjectById = function(projectType, projectId) {
-    if (this.projectsSection[projectType] && this.projectsSection[projectType].projects) {
-        return this.projectsSection[projectType].projects.id(projectId);
-    }
-    return null;
+siteSettingsSchema.methods.getProjectById = function(projectId) {
+    return this.projectsSection.projects.id(projectId);
+};
+
+// Method to get projects by type
+siteSettingsSchema.methods.getProjectsByType = function(projectType) {
+    return this.projectsSection.projects.filter(project => project.projectType === projectType);
 };
 
 module.exports = mongoose.model('SiteSettings', siteSettingsSchema);

@@ -6,14 +6,15 @@ const {
     getSiteSettings,
     updateHeroSection,
     updateAboutUsSection,
-    getProjectsByType,
+    getAllProjects,
     addProject,
     updateProject,
     deleteProject,
     addImageToGallery,
     removeImageFromGallery,
-    updateProjectSectionTitle,
-    getAllProjectsSections
+    updateProjectsSectionTitle,
+    getAllProjectTypes,
+    getProjectById
 } = require('../controllers/siteSettingsController');
 
 router.get('/', getSiteSettings)
@@ -22,20 +23,22 @@ router.put('/hero-section', isAdminAuthenticated, updateHeroSection)
 
 router.put('/about-us', isAdminAuthenticated, updateAboutUsSection)
 
-router.get('/projects', getAllProjectsSections)
+router.get('/projects', getAllProjects)
 
-router.get('/projects/:projectType', getProjectsByType)
+router.get('/project-types', getAllProjectTypes)
 
-router.post('/projects/:projectType', isAdminAuthenticated, addProject)
+router.get('/projects/:projectId', getProjectById)
 
-router.put('/projects/:projectType/section-title', isAdminAuthenticated, updateProjectSectionTitle)
+router.post('/projects', isAdminAuthenticated, addProject)
 
-router.put('/projects/:projectType/:projectId', isAdminAuthenticated, updateProject)
+router.put('/projects/section-title', isAdminAuthenticated, updateProjectsSectionTitle)
 
-router.delete('/projects/:projectType/:projectId', isAdminAuthenticated, deleteProject)
+router.put('/projects/:projectId', isAdminAuthenticated, updateProject)
 
-router.post('/projects/:projectType/:projectId/gallery', isAdminAuthenticated, addImageToGallery)
+router.delete('/projects/:projectId', isAdminAuthenticated, deleteProject)
 
-router.delete('/projects/:projectType/:projectId/gallery/:imageId', isAdminAuthenticated, removeImageFromGallery)
+router.post('/projects/:projectId/gallery', isAdminAuthenticated, addImageToGallery)
+
+router.delete('/projects/:projectId/gallery/:imageId', isAdminAuthenticated, removeImageFromGallery)
 
 module.exports = router;
