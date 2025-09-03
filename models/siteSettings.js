@@ -1,5 +1,11 @@
 const mongoose = require('mongoose');
 
+// Schema for multi-language fields
+const multiLanguageString = {
+  en: { type: String, default: '' },
+  ar: { type: String, default: '' }
+};
+
 const siteSettingsSchema = new mongoose.Schema({
     // Hero Section
     heroSection: {
@@ -13,20 +19,12 @@ const siteSettingsSchema = new mongoose.Schema({
                 default: ''
             }
         },
-        heroTitle: {
-            type: String,
-            required: [true, 'Hero title is required'],
-            maxlength: [200, 'Hero title cannot exceed 200 characters']
-        }
+        heroTitle: multiLanguageString // Multi-language support
     },
 
     // About Us Section
     aboutUsSection: {
-        title: {
-            type: String,
-            required: [true, 'About Us title is required'],
-            maxlength: [100, 'About Us title cannot exceed 100 characters']
-        },
+        title: multiLanguageString, // Multi-language support
         image: {
             url: {
                 type: String,
@@ -39,15 +37,8 @@ const siteSettingsSchema = new mongoose.Schema({
         },
         // Our Vision Sub-section
         ourVision: {
-            title: {
-                type: String,
-                required: [true, 'Vision title is required'],
-                maxlength: [100, 'Vision title cannot exceed 100 characters']
-            },
-            content: {
-                type: String,
-                required: [true, 'Vision content is required']
-            },
+            title: multiLanguageString, // Multi-language support
+            content: multiLanguageString, // Multi-language support
             image: {
                 url: {
                     type: String,
@@ -63,26 +54,15 @@ const siteSettingsSchema = new mongoose.Schema({
 
     // Projects Section - Simplified to allow any project type
     projectsSection: {
-        sectionTitle: {
-            type: String,
-            default: 'Projects',
-            maxlength: [100, 'Projects section title cannot exceed 100 characters']
-        },
+        sectionTitle: multiLanguageString, // Multi-language support
         projects: [{
             projectType: {
                 type: String,
                 required: [true, 'Project type is required'],
                 maxlength: [50, 'Project type cannot exceed 50 characters']
             },
-            title: {
-                type: String,
-                required: [true, 'Project title is required'],
-                maxlength: [150, 'Project title cannot exceed 150 characters']
-            },
-            description: {
-                type: String,
-                maxlength: [500, 'Project description cannot exceed 500 characters']
-            },
+            title: multiLanguageString, // Multi-language support
+            description: multiLanguageString, // Multi-language support
             heroImage: {
                 url: {
                     type: String,
@@ -104,15 +84,9 @@ const siteSettingsSchema = new mongoose.Schema({
                         required: true
                     }
                 },
-                caption: {
-                    type: String,
-                    maxlength: [200, 'Caption cannot exceed 200 characters']
-                }
+                caption: multiLanguageString // Multi-language support
             }],
-            location: {
-                type: String,
-                maxlength: [100, 'Location cannot exceed 100 characters']
-            },
+            location: multiLanguageString, // Multi-language support
             status: {
                 type: String,
                 enum: ['Planning', 'Under Construction', 'Completed', 'On Hold'],
@@ -123,6 +97,36 @@ const siteSettingsSchema = new mongoose.Schema({
                 default: true
             }
         }]
+    },
+    
+    // Language Settings
+    languageSettings: {
+        defaultLanguage: {
+            type: String,
+            default: 'en',
+            enum: ['en', 'ar']
+        },
+        supportedLanguages: {
+            type: [{
+                code: {
+                    type: String,
+                    required: true
+                },
+                name: {
+                    type: String,
+                    required: true
+                },
+                direction: {
+                    type: String,
+                    enum: ['ltr', 'rtl'],
+                    default: 'ltr'
+                }
+            }],
+            default: [
+                { code: 'en', name: 'English', direction: 'ltr' },
+                { code: 'ar', name: 'Arabic', direction: 'rtl' }
+            ]
+        }
     },
 
     // Meta Information
@@ -197,6 +201,88 @@ siteSettingsSchema.methods.getProjectById = function(projectId) {
 // Method to get projects by type
 siteSettingsSchema.methods.getProjectsByType = function(projectType) {
     return this.projectsSection.projects.filter(project => project.projectType === projectType);
+};
+
+// Method to get language settings
+siteSettingsSchema.methods.getLanguageSettings = function() {
+    // Ensure we always return default language settings if none are set
+    const defaultLanguages = [
+        { code: 'en', name: 'English', direction: 'ltr' },
+        { code: 'ar', name: 'Arabic', direction: 'rtl' }
+    ];
+    
+    return {
+        defaultLanguage: this.languageSettings.defaultLanguage || 'en',
+        supportedLanguages: (this.languageSettings.supportedLanguages && this.languageSettings.supportedLanguages.length > 0) 
+            ? this.languageSettings.supportedLanguages 
+            : defaultLanguages
+    };
+};
+
+// Method to get content in specific language
+siteSettingsSchema.methods.getContentInLanguage = function(languageCode) {
+    const settings = this.toObject();
+    
+    // Helper function to get content in specific language
+    const translateField = (field) => {
+        if (field && typeof field === 'object' && field.hasOwnProperty('en') && field.hasOwnProperty('ar')) {
+            return field[languageCode] || field.en || '';
+        }
+        return field;
+    };
+    
+    // Helper function to recursively translate objects
+    const translateObject = (obj) => {
+        if (!obj) return obj;
+        
+        if (Array.isArray(obj)) {
+            return obj.map(item => translateObject(item));
+        }
+        
+        if (typeof obj === 'object') {
+            const translated = {};
+            for (const key in obj) {
+                if (obj.hasOwnProperty(key)) {
+                    translated[key] = translateObject(obj[key]);
+                }
+            }
+            return translated;
+        }
+        
+        return translateField(obj);
+    };
+    
+    // Translate the relevant sections
+    const translatedSettings = {
+        heroSection: {
+            heroVideo: settings.heroSection.heroVideo,
+            heroTitle: translateField(settings.heroSection.heroTitle)
+        },
+        aboutUsSection: {
+            title: translateField(settings.aboutUsSection.title),
+            image: settings.aboutUsSection.image,
+            ourVision: {
+                title: translateField(settings.aboutUsSection.ourVision.title),
+                content: translateField(settings.aboutUsSection.ourVision.content),
+                image: settings.aboutUsSection.ourVision.image
+            }
+        },
+        projectsSection: {
+            sectionTitle: translateField(settings.projectsSection.sectionTitle),
+            projects: settings.projectsSection.projects.map(project => ({
+                ...project,
+                title: translateField(project.title),
+                description: translateField(project.description),
+                location: translateField(project.location),
+                gallery: project.gallery.map(image => ({
+                    ...image,
+                    caption: translateField(image.caption)
+                }))
+            }))
+        }
+    };
+    
+    return translatedSettings;
 };
 
 module.exports = mongoose.model('SiteSettings', siteSettingsSchema);

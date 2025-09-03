@@ -9,20 +9,36 @@ exports.getSiteSettings = catchAsyncErrors(async (req, res, next) => {
     
     if (!siteSettings) {
         siteSettings = await SiteSettings.create({
-            heroSection: { heroTitle: 'Welcome to Real Estate' },
+            heroSection: { heroTitle: { en: 'Welcome to Real Estate', ar: 'مرحبا بكم في العقارات' } },
             aboutUsSection: { 
-                title: 'About Us',
+                title: { en: 'About Us', ar: 'عنّا' },
                 ourVision: { 
-                    title: 'Our Vision',
-                    content: 'To be the leading real estate company'
+                    title: { en: 'Our Vision', ar: 'رؤيتنا' },
+                    content: { en: 'To be the leading real estate company', ar: 'أن نكون الشركة الرائدة في مجال العقارات' }
                 }
+            },
+            languageSettings: {
+                defaultLanguage: 'en',
+                supportedLanguages: [
+                    { code: 'en', name: 'English', direction: 'ltr' },
+                    { code: 'ar', name: 'Arabic', direction: 'rtl' }
+                ]
             }
         });
     }
     
+    // Get language from query parameter or default to 'en'
+    const language = req.query.lang || 'en';
+    
+    // Get content in the requested language
+    const translatedSettings = siteSettings.getContentInLanguage(language);
+    
     res.status(200).json({
         success: true,
-        siteSettings
+        siteSettings: {
+            ...translatedSettings,
+            languageSettings: siteSettings.getLanguageSettings()
+        }
     });
 });
 
@@ -36,9 +52,19 @@ exports.updateHeroSection = catchAsyncErrors(async (req, res, next) => {
         return next(new ErrorHandler('Site settings not found', 404));
     }
     
-    // Handle hero title update
+    // Handle hero title update (multi-language)
     if (heroTitle) {
-        siteSettings.heroSection.heroTitle = heroTitle;
+        if (typeof heroTitle === 'string') {
+            // If it's a string, update the default language (en)
+            siteSettings.heroSection.heroTitle.en = heroTitle;
+        } else if (typeof heroTitle === 'object') {
+            // If it's an object, update all provided languages
+            Object.keys(heroTitle).forEach(lang => {
+                if (['en', 'ar'].includes(lang)) {
+                    siteSettings.heroSection.heroTitle[lang] = heroTitle[lang];
+                }
+            });
+        }
     }
     
     // Handle hero video upload
@@ -77,9 +103,19 @@ exports.updateAboutUsSection = catchAsyncErrors(async (req, res, next) => {
         return next(new ErrorHandler('Site settings not found', 404));
     }
     
-    // Handle title update
+    // Handle title update (multi-language)
     if (title) {
-        siteSettings.aboutUsSection.title = title;
+        if (typeof title === 'string') {
+            // If it's a string, update the default language (en)
+            siteSettings.aboutUsSection.title.en = title;
+        } else if (typeof title === 'object') {
+            // If it's an object, update all provided languages
+            Object.keys(title).forEach(lang => {
+                if (['en', 'ar'].includes(lang)) {
+                    siteSettings.aboutUsSection.title[lang] = title[lang];
+                }
+            });
+        }
     }
     
     // Handle main about us image upload
@@ -100,8 +136,28 @@ exports.updateAboutUsSection = catchAsyncErrors(async (req, res, next) => {
     
     // Handle vision section updates
     if (vision) {
-        if (vision.title) siteSettings.aboutUsSection.ourVision.title = vision.title;
-        if (vision.content) siteSettings.aboutUsSection.ourVision.content = vision.content;
+        if (vision.title) {
+            if (typeof vision.title === 'string') {
+                siteSettings.aboutUsSection.ourVision.title.en = vision.title;
+            } else if (typeof vision.title === 'object') {
+                Object.keys(vision.title).forEach(lang => {
+                    if (['en', 'ar'].includes(lang)) {
+                        siteSettings.aboutUsSection.ourVision.title[lang] = vision.title[lang];
+                    }
+                });
+            }
+        }
+        if (vision.content) {
+            if (typeof vision.content === 'string') {
+                siteSettings.aboutUsSection.ourVision.content.en = vision.content;
+            } else if (typeof vision.content === 'object') {
+                Object.keys(vision.content).forEach(lang => {
+                    if (['en', 'ar'].includes(lang)) {
+                        siteSettings.aboutUsSection.ourVision.content[lang] = vision.content[lang];
+                    }
+                });
+            }
+        }
     }
     
     // Handle vision image upload
@@ -138,11 +194,25 @@ exports.getAllProjects = catchAsyncErrors(async (req, res, next) => {
         return next(new ErrorHandler('Site settings not found', 404));
     }
     
+    // Get language from query parameter or default to 'en'
+    const language = req.query.lang || 'en';
+    
+    // Get active projects and translate content
     const projects = siteSettings.getActiveProjects();
+    const translatedProjects = projects.map(project => ({
+        ...project.toObject(),
+        title: project.title[language] || project.title.en || '',
+        description: project.description[language] || project.description.en || '',
+        location: project.location[language] || project.location.en || '',
+        gallery: project.gallery.map(image => ({
+            ...image,
+            caption: image.caption[language] || image.caption.en || ''
+        }))
+    }));
     
     res.status(200).json({
         success: true,
-        projects
+        projects: translatedProjects
     });
 });
 
@@ -164,12 +234,12 @@ exports.addProject = catchAsyncErrors(async (req, res, next) => {
         return next(new ErrorHandler('Site settings not found', 404));
     }
     
-    // Prepare project data
+    // Prepare project data with multi-language support
     const projectData = {
         projectType,
-        title,
-        description: description || '',
-        location: location || '',
+        title: typeof title === 'object' ? title : { en: title, ar: title },
+        description: typeof description === 'object' ? description : { en: description || '', ar: description || '' },
+        location: typeof location === 'object' ? location : { en: location || '', ar: location || '' },
         isActive: true,
         gallery: []
     };
@@ -216,11 +286,45 @@ exports.updateProject = catchAsyncErrors(async (req, res, next) => {
         return next(new ErrorHandler('Project not found', 404));
     }
     
-    // Update text fields
+    // Update text fields with multi-language support
     if (projectType !== undefined) project.projectType = projectType;
-    if (title !== undefined) project.title = title;
-    if (description !== undefined) project.description = description;
-    if (location !== undefined) project.location = location;
+    
+    if (title !== undefined) {
+        if (typeof title === 'string') {
+            project.title.en = title;
+        } else if (typeof title === 'object') {
+            Object.keys(title).forEach(lang => {
+                if (['en', 'ar'].includes(lang)) {
+                    project.title[lang] = title[lang];
+                }
+            });
+        }
+    }
+    
+    if (description !== undefined) {
+        if (typeof description === 'string') {
+            project.description.en = description;
+        } else if (typeof description === 'object') {
+            Object.keys(description).forEach(lang => {
+                if (['en', 'ar'].includes(lang)) {
+                    project.description[lang] = description[lang];
+                }
+            });
+        }
+    }
+    
+    if (location !== undefined) {
+        if (typeof location === 'string') {
+            project.location.en = location;
+        } else if (typeof location === 'object') {
+            Object.keys(location).forEach(lang => {
+                if (['en', 'ar'].includes(lang)) {
+                    project.location[lang] = location[lang];
+                }
+            });
+        }
+    }
+    
     if (status !== undefined) project.status = status;
     if (isActive !== undefined) project.isActive = isActive;
     
@@ -312,9 +416,10 @@ exports.addImageToGallery = catchAsyncErrors(async (req, res, next) => {
         // Upload image to cloudinary
         const imageResult = await uploadToCloudinary(req.files.image, `realestate/projects/gallery`);
         
+        // Prepare image data with multi-language caption support
         const imageData = { 
             image: imageResult, 
-            caption: caption || '' 
+            caption: typeof caption === 'object' ? caption : { en: caption || '', ar: caption || '' }
         };
         
         await siteSettings.addToProjectGallery(projectId, imageData);
@@ -374,14 +479,26 @@ exports.updateProjectsSectionTitle = catchAsyncErrors(async (req, res, next) => 
         return next(new ErrorHandler('Site settings not found', 404));
     }
     
-    siteSettings.projectsSection.sectionTitle = sectionTitle;
+    // Handle section title update (multi-language)
+    if (typeof sectionTitle === 'string') {
+        // If it's a string, update the default language (en)
+        siteSettings.projectsSection.sectionTitle.en = sectionTitle;
+    } else if (typeof sectionTitle === 'object') {
+        // If it's an object, update all provided languages
+        Object.keys(sectionTitle).forEach(lang => {
+            if (['en', 'ar'].includes(lang)) {
+                siteSettings.projectsSection.sectionTitle[lang] = sectionTitle[lang];
+            }
+        });
+    }
+    
     siteSettings.lastUpdatedBy = req.id;
     await siteSettings.save();
     
     res.status(200).json({
         success: true,
         message: 'Projects section title updated successfully',
-        sectionTitle
+        sectionTitle: siteSettings.projectsSection.sectionTitle
     });
 });
 
@@ -393,16 +510,20 @@ exports.getAllProjectTypes = catchAsyncErrors(async (req, res, next) => {
         return next(new ErrorHandler('Site settings not found', 404));
     }
     
+    // Get language from query parameter or default to 'en'
+    const language = req.query.lang || 'en';
+    
     // Get all unique project types
     const allProjects = siteSettings.getActiveProjects();
     const projectTypes = {};
     
     allProjects.forEach(project => {
-        if (projectTypes[project.projectType]) {
-            projectTypes[project.projectType].count++;
+        const projectTypeName = project.projectType[language] || project.projectType.en || project.projectType;
+        if (projectTypes[projectTypeName]) {
+            projectTypes[projectTypeName].count++;
         } else {
-            projectTypes[project.projectType] = {
-                sectionTitle: project.projectType,
+            projectTypes[projectTypeName] = {
+                sectionTitle: projectTypeName,
                 count: 1
             };
         }
@@ -434,8 +555,68 @@ exports.getProjectById = catchAsyncErrors(async (req, res, next) => {
         return next(new ErrorHandler('Project is not active', 404));
     }
     
+    // Get language from query parameter or default to 'en'
+    const language = req.query.lang || 'en';
+    
+    // Translate project content
+    const translatedProject = {
+        ...project.toObject(),
+        title: project.title[language] || project.title.en || '',
+        description: project.description[language] || project.description.en || '',
+        location: project.location[language] || project.location.en || '',
+        gallery: project.gallery.map(image => ({
+            ...image,
+            caption: image.caption[language] || image.caption.en || ''
+        }))
+    };
+    
     res.status(200).json({
         success: true,
-        project
+        project: translatedProject
+    });
+});
+
+// Get language settings
+exports.getLanguageSettings = catchAsyncErrors(async (req, res, next) => {
+    const siteSettings = await SiteSettings.getActiveSiteSettings();
+    
+    if (!siteSettings) {
+        return next(new ErrorHandler('Site settings not found', 404));
+    }
+    
+    const languageSettings = siteSettings.getLanguageSettings();
+    
+    res.status(200).json({
+        success: true,
+        languageSettings
+    });
+});
+
+// Update language settings
+exports.updateLanguageSettings = catchAsyncErrors(async (req, res, next) => {
+    const { defaultLanguage, supportedLanguages } = req.body;
+    
+    let siteSettings = await SiteSettings.getActiveSiteSettings();
+    
+    if (!siteSettings) {
+        return next(new ErrorHandler('Site settings not found', 404));
+    }
+    
+    // Update language settings
+    if (defaultLanguage) {
+        siteSettings.languageSettings.defaultLanguage = defaultLanguage;
+    }
+    
+    if (supportedLanguages) {
+        siteSettings.languageSettings.supportedLanguages = supportedLanguages;
+    }
+    
+    siteSettings.lastUpdatedBy = req.id;
+    await siteSettings.save();
+    
+    res.status(200).json({
+        success: true,
+        message: 'Language settings updated successfully',
+        languageSettings: siteSettings.getLanguageSettings()
     });
 });

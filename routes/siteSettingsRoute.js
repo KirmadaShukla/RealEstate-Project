@@ -7,6 +7,7 @@ const {
     updateHeroSection,
     updateAboutUsSection,
     getAllProjects,
+    getProjectsByType,
     addProject,
     updateProject,
     deleteProject,
@@ -14,18 +15,22 @@ const {
     removeImageFromGallery,
     updateProjectsSectionTitle,
     getAllProjectTypes,
-    getProjectById
+    getProjectById,
+    getLanguageSettings,
+    updateLanguageSettings
 } = require('../controllers/siteSettingsController');
 
 router.get('/', getSiteSettings)
+
+router.get('/language-settings', getLanguageSettings)
+
+router.put('/language-settings', isAdminAuthenticated, updateLanguageSettings)
 
 router.put('/hero-section', isAdminAuthenticated, updateHeroSection)
 
 router.put('/about-us', isAdminAuthenticated, updateAboutUsSection)
 
 router.get('/projects', getAllProjects)
-
-router.get('/project-types', getAllProjectTypes)
 
 router.get('/projects/:projectId', getProjectById)
 
@@ -40,5 +45,7 @@ router.delete('/projects/:projectId', isAdminAuthenticated, deleteProject)
 router.post('/projects/:projectId/gallery', isAdminAuthenticated, addImageToGallery)
 
 router.delete('/projects/:projectId/gallery/:imageId', isAdminAuthenticated, removeImageFromGallery)
+
+router.get('/project-types', getAllProjectTypes)
 
 module.exports = router;
