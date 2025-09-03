@@ -9,6 +9,7 @@ const { generatedErrors } = require('./middlewares/error');
 const adminRouter = require('./routes/adminRoute');
 const siteSettingsRouter = require('./routes/siteSettingsRoute');
 const blogRouter = require('./routes/blogRoute');
+const contactRouter = require('./routes/contactRoute');
 const connectDB = require('./models/config');
 
 const app = express();
@@ -37,6 +38,7 @@ app.get('/', (req, res) => {
 app.use('/api/v1/admin',adminRouter)
 app.use('/api/v1/site-settings',siteSettingsRouter)
 app.use('/api/v1/blogs', blogRouter)
+app.use('/api/v1/contact', contactRouter)
 
 app.all('*', (req, res) => {
     res.status(404).json({
