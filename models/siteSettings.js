@@ -99,6 +99,30 @@ const siteSettingsSchema = new mongoose.Schema({
         }]
     },
     
+    // Social Media Links
+    socialMediaLinks: {
+        facebook: {
+            type: String,
+            default: '#'
+        },
+        twitter: {
+            type: String,
+            default: '#'
+        },
+        linkedin: {
+            type: String,
+            default: '#'
+        },
+        instagram: {
+            type: String,
+            default: '#'
+        },
+        youtube: {
+            type: String,
+            default: '#'
+        }
+    },
+    
     // Language Settings
     languageSettings: {
         defaultLanguage: {
@@ -279,7 +303,8 @@ siteSettingsSchema.methods.getContentInLanguage = function(languageCode) {
                     caption: translateField(image.caption)
                 }))
             }))
-        }
+        },
+        socialMediaLinks: settings.socialMediaLinks
     };
     
     return translatedSettings;

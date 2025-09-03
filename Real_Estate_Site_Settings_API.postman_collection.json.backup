@@ -360,18 +360,11 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/site-settings?lang=en",
+              "raw": "{{baseUrl}}/site-settings",
               "host": ["{{baseUrl}}"],
-              "path": ["site-settings"],
-              "query": [
-                {
-                  "key": "lang",
-                  "value": "en",
-                  "description": "Language code (en or ar)"
-                }
-              ]
+              "path": ["site-settings"]
             },
-            "description": "Get all site settings in specified language (Public endpoint)"
+            "description": "Get all site settings (Public endpoint)"
           }
         },
         {
@@ -450,47 +443,6 @@
               "path": ["site-settings", "about-us"]
             },
             "description": "Update about us section with images and content"
-          }
-        }
-      ]
-    },
-    {
-      "name": "🌐 Language Settings",
-      "description": "Manage site language settings and translations",
-      "item": [
-        {
-          "name": "Get Language Settings",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/site-settings/language-settings",
-              "host": ["{{baseUrl}}"],
-              "path": ["site-settings", "language-settings"]
-            },
-            "description": "Get current language settings (Public endpoint)"
-          }
-        },
-        {
-          "name": "Update Language Settings",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"defaultLanguage\": \"en\",\n  \"supportedLanguages\": [\n    {\n      \"code\": \"en\",\n      \"name\": \"English\",\n      \"direction\": \"ltr\"\n    },\n    {\n      \"code\": \"ar\",\n      \"name\": \"Arabic\",\n      \"direction\": \"rtl\"\n    }\n  ]\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/site-settings/language-settings",
-              "host": ["{{baseUrl}}"],
-              "path": ["site-settings", "language-settings"]
-            },
-            "description": "Update language settings (Admin only)"
           }
         }
       ]

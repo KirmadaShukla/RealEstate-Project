@@ -5,17 +5,22 @@ const { uploadToCloudinary, deleteFromCloudinary } = require('../utils/cloudinar
 
 // Get all active blogs
 exports.getAllBlogs = catchAsyncErrors(async (req, res, next) => {
+    const lang = req.query.lang || 'en'; // Get language from query parameter, default to 'en'
     const blogs = await Blog.getActiveBlogs();
+    
+    // Translate blogs to requested language
+    const translatedBlogs = blogs.map(blog => blog.getContentInLanguage(lang));
     
     res.status(200).json({
         success: true,
-        blogs
+        blogs: translatedBlogs
     });
 });
 
 // Get single blog by ID
 exports.getBlogById = catchAsyncErrors(async (req, res, next) => {
     const { id } = req.params;
+    const lang = req.query.lang || 'en'; // Get language from query parameter, default to 'en'
     
     const blog = await Blog.getBlogById(id);
     
@@ -27,9 +32,12 @@ exports.getBlogById = catchAsyncErrors(async (req, res, next) => {
         return next(new ErrorHandler('Blog is not active', 404));
     }
     
+    // Translate blog to requested language
+    const translatedBlog = blog.getContentInLanguage(lang);
+    
     res.status(200).json({
         success: true,
-        blog
+        blog: translatedBlog
     });
 });
 
@@ -37,14 +45,21 @@ exports.getBlogById = catchAsyncErrors(async (req, res, next) => {
 exports.createBlog = catchAsyncErrors(async (req, res, next) => {
     const { title, content } = req.body;
     
+    // Validate input - now we expect title and content to be objects with en and ar properties
     if (!title || !content) {
         return next(new ErrorHandler('Please provide title and content', 400));
     }
     
-    // Prepare blog data
+    // Prepare blog data with multi-language support
     const blogData = {
-        title,
-        content,
+        title: {
+            en: title.en || title || '',
+            ar: title.ar || ''
+        },
+        content: {
+            en: content.en || content || '',
+            ar: content.ar || ''
+        },
         author: req.id // Assuming req.id contains the admin ID from auth middleware
     };
     
@@ -80,9 +95,17 @@ exports.updateBlog = catchAsyncErrors(async (req, res, next) => {
         return next(new ErrorHandler('Blog not found', 404));
     }
     
-    // Update text fields
-    if (title !== undefined) blog.title = title;
-    if (content !== undefined) blog.content = content;
+    // Update text fields with multi-language support
+    if (title !== undefined) {
+        blog.title.en = title.en || title || blog.title.en;
+        blog.title.ar = title.ar || blog.title.ar;
+    }
+    
+    if (content !== undefined) {
+        blog.content.en = content.en || content || blog.content.en;
+        blog.content.ar = content.ar || blog.content.ar;
+    }
+    
     if (isActive !== undefined) blog.isActive = isActive;
     
     // Handle image update

@@ -8,7 +8,13 @@
     "dev": "nodemon app.js",
     "server": "nodemon app.js"
   },
-  "keywords": ["real-estate", "api", "nodejs", "express", "mongodb"],
+  "keywords": [
+    "real-estate",
+    "api",
+    "nodejs",
+    "express",
+    "mongodb"
+  ],
   "author": "",
   "license": "ISC",
   "description": "Real Estate Project API with Admin Authentication and Site Settings",

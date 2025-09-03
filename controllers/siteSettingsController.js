@@ -17,6 +17,13 @@ exports.getSiteSettings = catchAsyncErrors(async (req, res, next) => {
                     content: { en: 'To be the leading real estate company', ar: 'أن نكون الشركة الرائدة في مجال العقارات' }
                 }
             },
+            socialMediaLinks: {
+                facebook: '#',
+                twitter: '#',
+                linkedin: '#',
+                instagram: '#',
+                youtube: '#'
+            },
             languageSettings: {
                 defaultLanguage: 'en',
                 supportedLanguages: [
@@ -37,7 +44,8 @@ exports.getSiteSettings = catchAsyncErrors(async (req, res, next) => {
         success: true,
         siteSettings: {
             ...translatedSettings,
-            languageSettings: siteSettings.getLanguageSettings()
+            languageSettings: siteSettings.getLanguageSettings(),
+            socialMediaLinks: siteSettings.socialMediaLinks
         }
     });
 });
@@ -618,5 +626,32 @@ exports.updateLanguageSettings = catchAsyncErrors(async (req, res, next) => {
         success: true,
         message: 'Language settings updated successfully',
         languageSettings: siteSettings.getLanguageSettings()
+    });
+});
+
+// Update social media links
+exports.updateSocialMediaLinks = catchAsyncErrors(async (req, res, next) => {
+    const { facebook, twitter, linkedin, instagram, youtube } = req.body;
+    
+    let siteSettings = await SiteSettings.getActiveSiteSettings();
+    
+    if (!siteSettings) {
+        return next(new ErrorHandler('Site settings not found', 404));
+    }
+    
+    // Update social media links
+    if (facebook !== undefined) siteSettings.socialMediaLinks.facebook = facebook;
+    if (twitter !== undefined) siteSettings.socialMediaLinks.twitter = twitter;
+    if (linkedin !== undefined) siteSettings.socialMediaLinks.linkedin = linkedin;
+    if (instagram !== undefined) siteSettings.socialMediaLinks.instagram = instagram;
+    if (youtube !== undefined) siteSettings.socialMediaLinks.youtube = youtube;
+    
+    siteSettings.lastUpdatedBy = req.id;
+    await siteSettings.save();
+    
+    res.status(200).json({
+        success: true,
+        message: 'Social media links updated successfully',
+        socialMediaLinks: siteSettings.socialMediaLinks
     });
 });
