@@ -188,7 +188,7 @@ exports.deleteBlog = catchAsyncErrors(async (req, res, next) => {
         }
         
         // Remove blog from database
-        await blog.remove();
+        await blog.deleteOne();
         
         res.status(200).json({
             success: true,

@@ -67,7 +67,7 @@ exports.deleteContact = catchAsyncErrors(async (req, res, next) => {
         return next(new ErrorHandler('Contact submission not found', 404));
     }
     
-    await contact.remove();
+    await contact.deleteOne();
     
     res.status(200).json({
         success: true,
