@@ -1,4 +1,5 @@
 const SiteSettings = require('../models/siteSettings');
+const Leadership = require('../models/leadership');
 const ErrorHandler = require('../utils/ErrorHandler');
 const { catchAsyncErrors } = require('../middlewares/catchAsyncError');
 const { uploadToCloudinary, uploadVideoToCloudinary, deleteFromCloudinary } = require('../utils/cloudinary');
@@ -44,13 +45,75 @@ exports.getSiteSettings = catchAsyncErrors(async (req, res, next) => {
     // Get content in the requested language
     const translatedSettings = siteSettings.getContentInLanguage(language);
     
+    // Get all leadership members (both active and inactive)
+    const leaders = await Leadership.find({}).sort({ order: 1 });
+    
+    // Translate leaders to requested language
+    const translatedLeaders = leaders.map(leader => ({
+        _id: leader._id,
+        name: leader.name[language] || leader.name.en,
+        designation: leader.designation[language] || leader.designation.en,
+        image: leader.image,
+        socialMedia: leader.socialMedia,
+        order: leader.order
+    }));
+    
     res.status(200).json({
         success: true,
         siteSettings: {
             ...translatedSettings,
+            leadershipSection: {
+                ...translatedSettings.leadershipSection,
+                leaders: translatedLeaders
+            },
             languageSettings: siteSettings.getLanguageSettings(),
             socialMediaLinks: siteSettings.socialMediaLinks
         }
+    });
+});
+
+// Get projects by type
+exports.getProjectsByType = catchAsyncErrors(async (req, res, next) => {
+    const { projectType } = req.params;
+    const language = req.query.lang || 'en';
+    
+    const siteSettings = await SiteSettings.getActiveSiteSettings();
+    
+    if (!siteSettings) {
+        return next(new ErrorHandler('Site settings not found', 404));
+    }
+    
+    // Get projects by type using the model method
+    const projects = siteSettings.getProjectsByType(projectType);
+    
+    // Filter to only include active projects
+    const activeProjects = projects.filter(project => project.isActive !== false);
+    
+    // Get content in the requested language
+    const translatedProjects = activeProjects.map(project => {
+        // Helper function to get content in specific language
+        const translateField = (field) => {
+            if (field && typeof field === 'object' && field.hasOwnProperty('en') && field.hasOwnProperty('ar')) {
+                return field[language] || field.en || '';
+            }
+            return field;
+        };
+        
+        return {
+            ...project,
+            title: translateField(project.title),
+            description: translateField(project.description),
+            location: translateField(project.location),
+            gallery: project.gallery ? project.gallery.map(image => ({
+                ...image,
+                caption: translateField(image.caption)
+            })) : []
+        };
+    });
+    
+    res.status(200).json({
+        success: true,
+        projects: translatedProjects
     });
 });
 
@@ -671,5 +734,93 @@ exports.updateSocialMediaLinks = catchAsyncErrors(async (req, res, next) => {
         success: true,
         message: 'Social media links updated successfully',
         socialMediaLinks: siteSettings.socialMediaLinks
+    });
+});
+
+// Get contact information
+exports.getContactInfo = catchAsyncErrors(async (req, res, next) => {
+    const siteSettings = await SiteSettings.getActiveSiteSettings();
+    
+    if (!siteSettings) {
+        return next(new ErrorHandler('Site settings not found', 404));
+    }
+    
+    // Get language from query parameter or default to 'en'
+    const language = req.query.lang || 'en';
+    
+    // Get content in the requested language
+    const translatedContactInfo = {
+        address: siteSettings.contactInfo.address ? 
+            (siteSettings.contactInfo.address[language] || siteSettings.contactInfo.address.en || '') : '',
+        phone: siteSettings.contactInfo.phone || '',
+        email: siteSettings.contactInfo.email || '',
+        workingHours: siteSettings.contactInfo.workingHours ? 
+            (siteSettings.contactInfo.workingHours[language] || siteSettings.contactInfo.workingHours.en || '') : ''
+    };
+    
+    res.status(200).json({
+        success: true,
+        contactInfo: translatedContactInfo
+    });
+});
+
+// Update contact information
+exports.updateContactInfo = catchAsyncErrors(async (req, res, next) => {
+    // Extract fields with bracket notation for multilingual support
+    let { 
+        'address[en]': addressEn,
+        'address[ar]': addressAr,
+        phone,
+        email,
+        'workingHours[en]': workingHoursEn,
+        'workingHours[ar]': workingHoursAr
+    } = req.body;
+    
+    let siteSettings = await SiteSettings.getActiveSiteSettings();
+    
+    if (!siteSettings) {
+        return next(new ErrorHandler('Site settings not found', 404));
+    }
+    
+    // Initialize contactInfo if it doesn't exist
+    if (!siteSettings.contactInfo) {
+        siteSettings.contactInfo = {};
+    }
+    
+    // Handle address update (multi-language)
+    if (addressEn !== undefined || addressAr !== undefined) {
+        if (!siteSettings.contactInfo.address) {
+            siteSettings.contactInfo.address = { en: '', ar: '' };
+        }
+        siteSettings.contactInfo.address.en = addressEn || '';
+        siteSettings.contactInfo.address.ar = addressAr || '';
+    }
+    
+    // Handle phone update
+    if (phone !== undefined) {
+        siteSettings.contactInfo.phone = phone || '';
+    }
+    
+    // Handle email update
+    if (email !== undefined) {
+        siteSettings.contactInfo.email = email || '';
+    }
+    
+    // Handle working hours update (multi-language)
+    if (workingHoursEn !== undefined || workingHoursAr !== undefined) {
+        if (!siteSettings.contactInfo.workingHours) {
+            siteSettings.contactInfo.workingHours = { en: '', ar: '' };
+        }
+        siteSettings.contactInfo.workingHours.en = workingHoursEn || '';
+        siteSettings.contactInfo.workingHours.ar = workingHoursAr || '';
+    }
+    
+    siteSettings.lastUpdatedBy = req.id;
+    await siteSettings.save();
+    
+    res.status(200).json({
+        success: true,
+        message: 'Contact information updated successfully',
+        contactInfo: siteSettings.contactInfo
     });
 });

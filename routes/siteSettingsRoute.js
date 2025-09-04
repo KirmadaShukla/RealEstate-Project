@@ -18,7 +18,9 @@ const {
     getProjectById,
     getLanguageSettings,
     updateLanguageSettings,
-    updateSocialMediaLinks
+    updateSocialMediaLinks,
+    getContactInfo,
+    updateContactInfo
 } = require('../controllers/siteSettingsController');
 
 router.get('/', getSiteSettings)
@@ -27,6 +29,10 @@ router.get('/language-settings', getLanguageSettings)
 
 router.put('/language-settings', isAdminAuthenticated, updateLanguageSettings)
 
+router.get('/contact-info', getContactInfo)
+
+router.put('/contact-info', isAdminAuthenticated, updateContactInfo)
+
 router.put('/hero-section', isAdminAuthenticated, updateHeroSection)
 
 router.put('/about-us', isAdminAuthenticated, updateAboutUsSection)
@@ -34,6 +40,8 @@ router.put('/about-us', isAdminAuthenticated, updateAboutUsSection)
 router.put('/social-media-links', isAdminAuthenticated, updateSocialMediaLinks)
 
 router.get('/projects', getAllProjects)
+
+router.get('/projects/type/:projectType', getProjectsByType)
 
 router.get('/projects/:projectId', getProjectById)
 

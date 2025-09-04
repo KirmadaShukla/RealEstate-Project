@@ -11,6 +11,7 @@ const siteSettingsRouter = require('./routes/siteSettingsRoute');
 const blogRouter = require('./routes/blogRoute');
 const newsRouter = require('./routes/newsRoute');
 const contactRouter = require('./routes/contactRoute');
+const leadershipRouter = require('./routes/leadershipRoute');
 const connectDB = require('./models/config');
 
 const app = express();
@@ -41,6 +42,7 @@ app.use('/api/v1/site-settings',siteSettingsRouter)
 app.use('/api/v1/blogs', blogRouter)
 app.use('/api/v1/contact', contactRouter)
 app.use('/api/v1/news', newsRouter)
+app.use('/api/v1/leadership', leadershipRouter)
 app.all('*', (req, res) => {
     res.status(404).json({
         success: false,

@@ -1,232 +1,174 @@
 const mongoose = require('mongoose');
-
-// Schema for multi-language fields
-const multiLanguageString = {
-  en: { type: String, default: '' },
-  ar: { type: String, default: '' }
-};
+const ErrorHandler = require('../utils/ErrorHandler');
 
 const siteSettingsSchema = new mongoose.Schema({
-    // Hero Section
-    heroSection: {
-        heroVideo: {
-            url: {
-                type: String,
-                default: ''
-            },
-            fileId: {
-                type: String,
-                default: ''
-            }
-        },
-        heroTitle: multiLanguageString, // Multi-language support
-        heroSubtitle: multiLanguageString, // Multi-language support
-        heroDescription: multiLanguageString // Multi-language support
+  heroSection: {
+    heroVideo: {
+      url: String,
+      fileId: String
     },
-
-    // About Us Section
-    aboutUsSection: {
-        title: multiLanguageString, // Multi-language support
-        image: {
-            url: {
-                type: String,
-                default: ''
-            },
-            fileId: {
-                type: String,
-                default: ''
-            }
-        },
-        // Our Vision Sub-section
-        ourVision: {
-            title: multiLanguageString, // Multi-language support
-            content: multiLanguageString, // Multi-language support
-            image: {
-                url: {
-                    type: String,
-                    default: ''
-                },
-                fileId: {
-                    type: String,
-                    default: ''
-                }
-            }
-        }
+    heroTitle: {
+      en: String,
+      ar: String
     },
-
-    // Projects Section - Simplified to allow any project type
-    projectsSection: {
-        sectionTitle: multiLanguageString, // Multi-language support
-        projects: [{
-            projectType: {
-                type: String,
-                required: [true, 'Project type is required'],
-                maxlength: [50, 'Project type cannot exceed 50 characters']
-            },
-            title: multiLanguageString, // Multi-language support
-            description: multiLanguageString, // Multi-language support
-            heroImage: {
-                url: {
-                    type: String,
-                    default: ''
-                },
-                fileId: {
-                    type: String,
-                    default: ''
-                }
-            },
-            gallery: [{
-                image: {
-                    url: {
-                        type: String,
-                        required: true
-                    },
-                    fileId: {
-                        type: String,
-                        required: true
-                    }
-                },
-                caption: multiLanguageString // Multi-language support
-            }],
-            location: multiLanguageString, // Multi-language support
-            status: {
-                type: String,
-                enum: ['Planning', 'Under Construction', 'Completed', 'On Hold'],
-                default: 'Planning'
-            },
-            isActive: {
-                type: Boolean,
-                default: true
-            }
-        }]
+    heroSubtitle: {
+      en: String,
+      ar: String
     },
-    
-    // Social Media Links
-    socialMediaLinks: {
-        facebook: {
-            type: String,
-            default: '#'
-        },
-        twitter: {
-            type: String,
-            default: '#'
-        },
-        linkedin: {
-            type: String,
-            default: '#'
-        },
-        instagram: {
-            type: String,
-            default: '#'
-        },
-        youtube: {
-            type: String,
-            default: '#'
-        }
+    heroDescription: {
+      en: String,
+      ar: String
+    }
+  },
+  aboutUsSection: {
+    title: {
+      en: String,
+      ar: String
     },
-    
-    // Language Settings
-    languageSettings: {
-        defaultLanguage: {
-            type: String,
-            default: 'en',
-            enum: ['en', 'ar']
-        },
-        supportedLanguages: {
-            type: [{
-                code: {
-                    type: String,
-                    required: true
-                },
-                name: {
-                    type: String,
-                    required: true
-                },
-                direction: {
-                    type: String,
-                    enum: ['ltr', 'rtl'],
-                    default: 'ltr'
-                }
-            }],
-            default: [
-                { code: 'en', name: 'English', direction: 'ltr' },
-                { code: 'ar', name: 'Arabic', direction: 'rtl' }
-            ]
-        }
+    image: {
+      url: String,
+      fileId: String
     },
-
-    // Meta Information
-    isActive: {
+    ourVision: {
+      title: {
+        en: String,
+        ar: String
+      },
+      content: {
+        en: String,
+        ar: String
+      },
+      image: {
+        url: String,
+        fileId: String
+      }
+    }
+  },
+  projectsSection: {
+    sectionTitle: {
+      en: String,
+      ar: String
+    },
+    projects: [{
+      projectType: String,
+      title: {
+        en: String,
+        ar: String
+      },
+      description: {
+        en: String,
+        ar: String
+      },
+      location: {
+        en: String,
+        ar: String
+      },
+      status: String,
+      year: String,
+      units: Number,
+      area: String,
+      isActive: {
         type: Boolean,
         default: true
+      },
+      heroImage: {
+        url: String,
+        fileId: String
+      },
+      gallery: [{
+        imageUrl: String,
+        caption: {
+          en: String,
+          ar: String
+        },
+        _id: String
+      }]
+    }]
+  },
+  leadershipSection: {
+    sectionTitle: {
+      en: {
+        type: String,
+        default: 'Leadership Team'
+      },
+      ar: {
+        type: String,
+        default: 'فريق القيادة'
+      }
     },
-
-    lastUpdatedBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Admin'
+    description: {
+      en: {
+        type: String,
+        default: 'Meet the visionaries who are leading our company towards a transformative future.'
+      },
+      ar: {
+        type: String,
+        default: 'تعرف على أصحاب الرؤى الذين يقودون شركتنا نحو مستقبل تحويلي.'
+      }
     }
-
+  },
+  contactInfo: {
+    address: {
+      en: String,
+      ar: String
+    },
+    phone: String,
+    email: String,
+    workingHours: {
+      en: String,
+      ar: String
+    }
+  },
+  socialMediaLinks: {
+    facebook: String,
+    twitter: String,
+    linkedin: String,
+    instagram: String,
+    youtube: String
+  },
+  languageSettings: {
+    defaultLanguage: {
+      type: String,
+      default: 'en'
+    },
+    supportedLanguages: [{
+      code: String,
+      name: String,
+      direction: String
+    }]
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  }
 }, {
-    timestamps: true
+  timestamps: true
 });
 
-// Index for better performance
-siteSettingsSchema.index({ isActive: 1 });
-
-// Static method to get active site settings
-siteSettingsSchema.statics.getActiveSiteSettings = async function() {
-    return await this.findOne({ isActive: true });
+// Method to get active site settings
+siteSettingsSchema.statics.getActiveSiteSettings = function() {
+  return this.findOne({ isActive: true });
 };
 
-// Method to add project
-siteSettingsSchema.methods.addProject = function(projectData) {
-    this.projectsSection.projects.push(projectData);
-    return this.save();
-};
-
-// Method to remove project
-siteSettingsSchema.methods.removeProject = function(projectId) {
-    const project = this.projectsSection.projects.id(projectId);
-    if (project) {
-        this.projectsSection.projects.pull(projectId);
-        return this.save();
-    }
-    throw new Error(`Project not found with id: ${projectId}`);
-};
-
-// Method to add image to project gallery
-siteSettingsSchema.methods.addToProjectGallery = function(projectId, imageData) {
-    const project = this.projectsSection.projects.id(projectId);
-    if (project) {
-        project.gallery.push(imageData);
-        return this.save();
-    }
-    throw new Error(`Project not found with id: ${projectId}`);
-};
-
-// Method to remove image from project gallery
-siteSettingsSchema.methods.removeFromProjectGallery = function(projectId, imageId) {
-    const project = this.projectsSection.projects.id(projectId);
-    if (project) {
-        project.gallery.pull(imageId);
-        return this.save();
-    }
-    throw new Error(`Project not found with id: ${projectId}`);
-};
-
-// Method to get active projects
+// Method to get all active projects
 siteSettingsSchema.methods.getActiveProjects = function() {
-    return this.projectsSection.projects.filter(project => project.isActive);
+    return this.projectsSection.projects.filter(project => project.isActive !== false);
 };
 
-// Method to get project by ID
+// Method to get a project by ID
 siteSettingsSchema.methods.getProjectById = function(projectId) {
-    return this.projectsSection.projects.id(projectId);
+    return this.projectsSection.projects.find(project => project._id.toString() === projectId);
 };
 
 // Method to get projects by type
 siteSettingsSchema.methods.getProjectsByType = function(projectType) {
     return this.projectsSection.projects.filter(project => project.projectType === projectType);
+};
+
+// Method to add a new project
+siteSettingsSchema.methods.addProject = function(projectData) {
+    this.projectsSection.projects.push(projectData);
+    return this.save();
 };
 
 // Method to get language settings
@@ -305,6 +247,16 @@ siteSettingsSchema.methods.getContentInLanguage = function(languageCode) {
                     caption: translateField(image.caption)
                 }))
             }))
+        },
+        leadershipSection: {
+            sectionTitle: translateField(settings.leadershipSection.sectionTitle),
+            description: translateField(settings.leadershipSection.description)
+        },
+        contactInfo: {
+            address: translateField(settings.contactInfo?.address),
+            phone: settings.contactInfo?.phone || '',
+            email: settings.contactInfo?.email || '',
+            workingHours: translateField(settings.contactInfo?.workingHours)
         },
         socialMediaLinks: settings.socialMediaLinks
     };
