@@ -43,44 +43,40 @@ exports.getBlogById = catchAsyncErrors(async (req, res, next) => {
 
 // Create new blog
 exports.createBlog = catchAsyncErrors(async (req, res, next) => {
-    let { title, content } = req.body;
+    // Extract fields with bracket notation for multilingual support
+    let { 
+        'title[en]': titleEn, 
+        'title[ar]': titleAr, 
+        'content[en]': contentEn, 
+        'content[ar]': contentAr,
+        date, 
+        isActive 
+    } = req.body;
     
-    // Parse JSON strings if they're sent as strings (from form-data)
-    if (typeof title === 'string') {
-        try {
-            title = JSON.parse(title);
-        } catch (e) {
-            // If parsing fails, treat as single language value
-            title = { en: title, ar: '' };
-        }
-    }
-    
-    if (typeof content === 'string') {
-        try {
-            content = JSON.parse(content);
-        } catch (e) {
-            // If parsing fails, treat as single language value
-            content = { en: content, ar: '' };
-        }
-    }
-    
-    // Validate input - now we expect title and content to be objects with en and ar properties
-    if (!title || !content) {
+    // Validate input - we expect title and content in both languages
+    if ((titleEn === undefined && titleAr === undefined) || (contentEn === undefined && contentAr === undefined)) {
         return next(new ErrorHandler('Please provide title and content', 400));
     }
     
     // Prepare blog data with multi-language support
     const blogData = {
         title: {
-            en: title.en || title || '',
-            ar: title.ar || ''
+            en: titleEn || '',
+            ar: titleAr || ''
         },
         content: {
-            en: content.en || content || '',
-            ar: content.ar || ''
+            en: contentEn || '',
+            ar: contentAr || ''
         },
-        author: req.id // Assuming req.id contains the admin ID from auth middleware
+        author: req.id, // Assuming req.id contains the admin ID from auth middleware
+        isActive: isActive === 'true' || isActive === true // Handle boolean conversion
     };
+    
+    // Handle custom date (if provided)
+    if (date) {
+        // Set the createdAt field to the provided date
+        blogData.createdAt = new Date(date);
+    }
     
     // Handle image upload
     if (req.files && req.files.image) {
@@ -106,26 +102,15 @@ exports.createBlog = catchAsyncErrors(async (req, res, next) => {
 // Update blog
 exports.updateBlog = catchAsyncErrors(async (req, res, next) => {
     const { id } = req.params;
-    let { title, content, isActive } = req.body;
-    
-    // Parse JSON strings if they're sent as strings (from form-data)
-    if (title && typeof title === 'string') {
-        try {
-            title = JSON.parse(title);
-        } catch (e) {
-            // If parsing fails, treat as single language value
-            title = { en: title, ar: '' };
-        }
-    }
-    
-    if (content && typeof content === 'string') {
-        try {
-            content = JSON.parse(content);
-        } catch (e) {
-            // If parsing fails, treat as single language value
-            content = { en: content, ar: '' };
-        }
-    }
+    // Extract fields with bracket notation for multilingual support
+    let { 
+        'title[en]': titleEn, 
+        'title[ar]': titleAr, 
+        'content[en]': contentEn, 
+        'content[ar]': contentAr,
+        date, 
+        isActive 
+    } = req.body;
     
     let blog = await Blog.findById(id);
     
@@ -133,18 +118,18 @@ exports.updateBlog = catchAsyncErrors(async (req, res, next) => {
         return next(new ErrorHandler('Blog not found', 404));
     }
     
-    // Update text fields with multi-language support
-    if (title !== undefined) {
-        blog.title.en = title.en || title || blog.title.en;
-        blog.title.ar = title.ar || blog.title.ar;
+    // Update text fields with multi-language support only if they're provided
+    if (titleEn !== undefined || titleAr !== undefined) {
+        blog.title.en = titleEn || '';
+        blog.title.ar = titleAr || '';
     }
     
-    if (content !== undefined) {
-        blog.content.en = content.en || content || blog.content.en;
-        blog.content.ar = content.ar || blog.content.ar;
+    if (contentEn !== undefined || contentAr !== undefined) {
+        blog.content.en = contentEn || '';
+        blog.content.ar = contentAr || '';
     }
     
-    if (isActive !== undefined) blog.isActive = isActive;
+    if (isActive !== undefined) blog.isActive = isActive === 'true' || isActive === true;
     
     // Handle image update
     if (req.files && req.files.image) {

@@ -19,7 +19,9 @@ const siteSettingsSchema = new mongoose.Schema({
                 default: ''
             }
         },
-        heroTitle: multiLanguageString // Multi-language support
+        heroTitle: multiLanguageString, // Multi-language support
+        heroSubtitle: multiLanguageString, // Multi-language support
+        heroDescription: multiLanguageString // Multi-language support
     },
 
     // About Us Section

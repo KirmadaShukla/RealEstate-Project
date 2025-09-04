@@ -43,44 +43,40 @@ exports.getNewsById = catchAsyncErrors(async (req, res, next) => {
 
 // Create new news
 exports.addNews = catchAsyncErrors(async (req, res, next) => {
-    let { title, content } = req.body;
+    // Extract fields with bracket notation for multilingual support
+    let { 
+        'title[en]': titleEn, 
+        'title[ar]': titleAr, 
+        'content[en]': contentEn, 
+        'content[ar]': contentAr,
+        date, 
+        isActive 
+    } = req.body;
     
-    // Parse JSON strings if they're sent as strings (from form-data)
-    if (typeof title === 'string') {
-        try {
-            title = JSON.parse(title);
-        } catch (e) {
-            // If parsing fails, treat as single language value
-            title = { en: title, ar: '' };
-        }
-    }
-    
-    if (typeof content === 'string') {
-        try {
-            content = JSON.parse(content);
-        } catch (e) {
-            // If parsing fails, treat as single language value
-            content = { en: content, ar: '' };
-        }
-    }
-    
-    // Validate input - now we expect title and content to be objects with en and ar properties
-    if (!title || !content) {
+    // Validate input - we expect title and content in both languages
+    if ((titleEn === undefined && titleAr === undefined) || (contentEn === undefined && contentAr === undefined)) {
         return next(new ErrorHandler('Please provide title and content', 400));
     }
     
     // Prepare news data with multi-language support
     const newsData = {
         title: {
-            en: title.en || title || '',
-            ar: title.ar || ''
+            en: titleEn || '',
+            ar: titleAr || ''
         },
         content: {
-            en: content.en || content || '',
-            ar: content.ar || ''
+            en: contentEn || '',
+            ar: contentAr || ''
         },
-        author: req.id // Assuming req.id contains the admin ID from auth middleware
+        author: req.id, // Assuming req.id contains the admin ID from auth middleware
+        isActive: isActive === 'true' || isActive === true // Handle boolean conversion
     };
+    
+    // Handle custom date (if provided)
+    if (date) {
+        // Set the createdAt field to the provided date
+        newsData.createdAt = new Date(date);
+    }
     
     // Handle image upload
     if (req.files && req.files.image) {
@@ -106,26 +102,15 @@ exports.addNews = catchAsyncErrors(async (req, res, next) => {
 // Update news
 exports.updateNews = catchAsyncErrors(async (req, res, next) => {
     const { id } = req.params;
-    let { title, content, isActive } = req.body;
-    
-    // Parse JSON strings if they're sent as strings (from form-data)
-    if (title && typeof title === 'string') {
-        try {
-            title = JSON.parse(title);
-        } catch (e) {
-            // If parsing fails, treat as single language value
-            title = { en: title, ar: '' };
-        }
-    }
-    
-    if (content && typeof content === 'string') {
-        try {
-            content = JSON.parse(content);
-        } catch (e) {
-            // If parsing fails, treat as single language value
-            content = { en: content, ar: '' };
-        }
-    }
+    // Extract fields with bracket notation for multilingual support
+    let { 
+        'title[en]': titleEn, 
+        'title[ar]': titleAr, 
+        'content[en]': contentEn, 
+        'content[ar]': contentAr,
+        date, 
+        isActive 
+    } = req.body;
     
     let news = await News.findById(id);
     
@@ -133,18 +118,18 @@ exports.updateNews = catchAsyncErrors(async (req, res, next) => {
         return next(new ErrorHandler('News not found', 404));
     }
     
-    // Update text fields with multi-language support
-    if (title !== undefined) {
-        news.title.en = title.en || title || news.title.en;
-        news.title.ar = title.ar || news.title.ar;
+    // Update text fields with multi-language support only if they're provided
+    if (titleEn !== undefined || titleAr !== undefined) {
+        news.title.en = titleEn || '';
+        news.title.ar = titleAr || '';
     }
     
-    if (content !== undefined) {
-        news.content.en = content.en || content || news.content.en;
-        news.content.ar = content.ar || news.content.ar;
+    if (contentEn !== undefined || contentAr !== undefined) {
+        news.content.en = contentEn || '';
+        news.content.ar = contentAr || '';
     }
     
-    if (isActive !== undefined) news.isActive = isActive;
+    if (isActive !== undefined) news.isActive = isActive === 'true' || isActive === true;
     
     // Handle image update
     if (req.files && req.files.image) {
