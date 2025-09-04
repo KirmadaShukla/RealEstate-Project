@@ -43,7 +43,26 @@ exports.getBlogById = catchAsyncErrors(async (req, res, next) => {
 
 // Create new blog
 exports.createBlog = catchAsyncErrors(async (req, res, next) => {
-    const { title, content } = req.body;
+    let { title, content } = req.body;
+    
+    // Parse JSON strings if they're sent as strings (from form-data)
+    if (typeof title === 'string') {
+        try {
+            title = JSON.parse(title);
+        } catch (e) {
+            // If parsing fails, treat as single language value
+            title = { en: title, ar: '' };
+        }
+    }
+    
+    if (typeof content === 'string') {
+        try {
+            content = JSON.parse(content);
+        } catch (e) {
+            // If parsing fails, treat as single language value
+            content = { en: content, ar: '' };
+        }
+    }
     
     // Validate input - now we expect title and content to be objects with en and ar properties
     if (!title || !content) {
@@ -87,7 +106,26 @@ exports.createBlog = catchAsyncErrors(async (req, res, next) => {
 // Update blog
 exports.updateBlog = catchAsyncErrors(async (req, res, next) => {
     const { id } = req.params;
-    const { title, content, isActive } = req.body;
+    let { title, content, isActive } = req.body;
+    
+    // Parse JSON strings if they're sent as strings (from form-data)
+    if (title && typeof title === 'string') {
+        try {
+            title = JSON.parse(title);
+        } catch (e) {
+            // If parsing fails, treat as single language value
+            title = { en: title, ar: '' };
+        }
+    }
+    
+    if (content && typeof content === 'string') {
+        try {
+            content = JSON.parse(content);
+        } catch (e) {
+            // If parsing fails, treat as single language value
+            content = { en: content, ar: '' };
+        }
+    }
     
     let blog = await Blog.findById(id);
     

@@ -226,7 +226,7 @@ exports.getAllProjects = catchAsyncErrors(async (req, res, next) => {
 
 // Add new project
 exports.addProject = catchAsyncErrors(async (req, res, next) => {
-    const { projectType, title, description, location } = req.body;
+    let { projectType, title, description, location } = req.body;
     
     if (!projectType) {
         return next(new ErrorHandler('Project type is required', 400));
@@ -234,6 +234,34 @@ exports.addProject = catchAsyncErrors(async (req, res, next) => {
     
     if (!title) {
         return next(new ErrorHandler('Project title is required', 400));
+    }
+    
+    // Parse JSON strings if they're sent as strings (from form-data)
+    if (typeof title === 'string') {
+        try {
+            title = JSON.parse(title);
+        } catch (e) {
+            // If parsing fails, treat as single language value
+            title = { en: title, ar: '' };
+        }
+    }
+    
+    if (typeof description === 'string') {
+        try {
+            description = JSON.parse(description);
+        } catch (e) {
+            // If parsing fails, treat as single language value
+            description = { en: description || '', ar: '' };
+        }
+    }
+    
+    if (typeof location === 'string') {
+        try {
+            location = JSON.parse(location);
+        } catch (e) {
+            // If parsing fails, treat as single language value
+            location = { en: location || '', ar: '' };
+        }
     }
     
     const siteSettings = await SiteSettings.getActiveSiteSettings();
@@ -280,7 +308,35 @@ exports.addProject = catchAsyncErrors(async (req, res, next) => {
 // Update project
 exports.updateProject = catchAsyncErrors(async (req, res, next) => {
     const { projectId } = req.params;
-    const { projectType, title, description, location, status, isActive } = req.body;
+    let { projectType, title, description, location, status, isActive } = req.body;
+    
+    // Parse JSON strings if they're sent as strings (from form-data)
+    if (title && typeof title === 'string') {
+        try {
+            title = JSON.parse(title);
+        } catch (e) {
+            // If parsing fails, treat as single language value
+            title = { en: title, ar: '' };
+        }
+    }
+    
+    if (description && typeof description === 'string') {
+        try {
+            description = JSON.parse(description);
+        } catch (e) {
+            // If parsing fails, treat as single language value
+            description = { en: description || '', ar: '' };
+        }
+    }
+    
+    if (location && typeof location === 'string') {
+        try {
+            location = JSON.parse(location);
+        } catch (e) {
+            // If parsing fails, treat as single language value
+            location = { en: location || '', ar: '' };
+        }
+    }
     
     const siteSettings = await SiteSettings.getActiveSiteSettings();
     
@@ -408,10 +464,20 @@ exports.deleteProject = catchAsyncErrors(async (req, res, next) => {
 // Add image to gallery
 exports.addImageToGallery = catchAsyncErrors(async (req, res, next) => {
     const { projectId } = req.params;
-    const { caption } = req.body;
+    let { caption } = req.body;
     
     if (!req.files || !req.files.image) {
         return next(new ErrorHandler('Image file is required', 400));
+    }
+    
+    // Parse JSON strings if they're sent as strings (from form-data)
+    if (typeof caption === 'string') {
+        try {
+            caption = JSON.parse(caption);
+        } catch (e) {
+            // If parsing fails, treat as single language value
+            caption = { en: caption || '', ar: '' };
+        }
     }
     
     const siteSettings = await SiteSettings.getActiveSiteSettings();

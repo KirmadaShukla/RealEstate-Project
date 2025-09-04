@@ -1,0 +1,1352 @@
+{
+  "info": {
+    "name": "Final Completely Fixed Real Estate API Collection",
+    "description": "Complete API collection for Real Estate platform with proper multi-language support for all endpoints. This version includes fixes for JSON string parsing in all controllers (news, blog, and siteSettings) to properly handle form-data requests with multi-language content.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{adminToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "projectId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "imageId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "blogId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "newsId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "contactId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "projectType",
+      "value": "residential",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 Authentication",
+      "description": "Admin authentication endpoints",
+      "item": [
+        {
+          "name": "Admin Setup (First Time Only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@realestate.com\",\n  \"password\": \"admin123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/setup",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "setup"]
+            },
+            "description": "Creates the first admin account. Only works if no admin exists."
+          }
+        },
+        {
+          "name": "Admin Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newadmin@realestate.com\",\n  \"password\": \"admin123456\",\n  \"adminKey\": \"secure_admin_key_2024\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "register"]
+            },
+            "description": "Register new admin with admin key"
+          }
+        },
+        {
+          "name": "Admin Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('adminToken', response.token);",
+                  "    pm.test('Login successful', () => {",
+                  "        pm.expect(response.success).to.be.true;",
+                  "        pm.expect(response.token).to.exist;",
+                  "    });",
+                  "    console.log('🔑 Token saved:', response.token.substring(0, 20) + '...');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@realestate.com\",\n  \"password\": \"admin123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "login"]
+            },
+            "description": "Login admin and automatically save token"
+          }
+        },
+        {
+          "name": "Check Auth Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/auth-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "auth-status"]
+            },
+            "description": "Check if admin is authenticated"
+          }
+        },
+        {
+          "name": "Get Admin Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "profile"]
+            },
+            "description": "Get current admin profile information"
+          }
+        },
+        {
+          "name": "Update Admin Password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"admin123456\",\n  \"newPassword\": \"newpassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/update-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "update-password"]
+            },
+            "description": "Update admin password"
+          }
+        },
+        {
+          "name": "Admin Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    pm.collectionVariables.set('adminToken', '');",
+                  "    pm.test('Logout successful', () => {",
+                  "        pm.expect(response.success).to.be.true;",
+                  "    });",
+                  "    console.log('👋 Logged out successfully');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "logout"]
+            },
+            "description": "Logout admin and clear token"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🌍 Site Settings - Public",
+      "description": "Public endpoints for site settings and content",
+      "item": [
+        {
+          "name": "Get Site Settings (English)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/site-settings?lang=en",
+              "host": ["{{baseUrl}}"],
+              "path": ["site-settings"],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "en",
+                  "description": "Language code (en or ar)"
+                }
+              ]
+            },
+            "description": "Get all site settings in English (Public endpoint)"
+          }
+        },
+        {
+          "name": "Get Site Settings (Arabic)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/site-settings?lang=ar",
+              "host": ["{{baseUrl}}"],
+              "path": ["site-settings"],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "ar",
+                  "description": "Language code (en or ar)"
+                }
+              ]
+            },
+            "description": "Get all site settings in Arabic (Public endpoint)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "⚙️ Site Settings - Admin",
+      "description": "Admin endpoints for managing site settings",
+      "item": [
+        {
+          "name": "Update Hero Section",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"heroTitle\": {\n    \"en\": \"Welcome to Our Real Estate Platform\",\n    \"ar\": \"مرحبا بكم في منصتنا للعقارات\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/site-settings/hero-section",
+              "host": ["{{baseUrl}}"],
+              "path": ["site-settings", "hero-section"]
+            },
+            "description": "Update hero section with multi-language support (Admin only)"
+          }
+        },
+        {
+          "name": "Update Hero Section with Video",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "heroTitle",
+                  "value": "{\n  \"en\": \"Welcome to Our Real Estate Platform\",\n  \"ar\": \"مرحبا بكم في منصتنا للعقارات\"\n}",
+                  "type": "text"
+                },
+                {
+                  "key": "heroVideo",
+                  "type": "file",
+                  "src": "",
+                  "description": "Hero section background video"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/site-settings/hero-section",
+              "host": ["{{baseUrl}}"],
+              "path": ["site-settings", "hero-section"]
+            },
+            "description": "Update hero section with video and multi-language title (Admin only)"
+          }
+        },
+        {
+          "name": "Update About Us Section",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": {\n    \"en\": \"About Our Company\",\n    \"ar\": \"عن شركتنا\"\n  },\n  \"vision\": {\n    \"title\": {\n      \"en\": \"Our Vision\",\n      \"ar\": \"رؤيتنا\"\n    },\n    \"content\": {\n      \"en\": \"To be the leading real estate platform in the region\",\n      \"ar\": \"أن نكون المنصة الرائدة للعقارات في المنطقة\"\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/site-settings/about-us",
+              "host": ["{{baseUrl}}"],
+              "path": ["site-settings", "about-us"]
+            },
+            "description": "Update About Us section with multi-language support (Admin only)"
+          }
+        },
+        {
+          "name": "Update About Us Section with Images",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "value": "{\n  \"en\": \"About Our Company\",\n  \"ar\": \"عن شركتنا\"\n}",
+                  "type": "text"
+                },
+                {
+                  "key": "vision",
+                  "value": "{\n  \"title\": {\n    \"en\": \"Our Vision\",\n    \"ar\": \"رؤيتنا\"\n  },\n  \"content\": {\n    \"en\": \"To be the leading real estate platform in the region\",\n    \"ar\": \"أن نكون المنصة الرائدة للعقارات في المنطقة\"\n  }\n}",
+                  "type": "text"
+                },
+                {
+                  "key": "aboutImage",
+                  "type": "file",
+                  "src": "",
+                  "description": "Main about us section image"
+                },
+                {
+                  "key": "visionImage",
+                  "type": "file",
+                  "src": "",
+                  "description": "Our vision section image"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/site-settings/about-us",
+              "host": ["{{baseUrl}}"],
+              "path": ["site-settings", "about-us"]
+            },
+            "description": "Update About Us section with images and multi-language content (Admin only)"
+          }
+        },
+        {
+          "name": "Update Social Media Links",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"socialMediaLinks\": {\n    \"facebook\": \"https://facebook.com/realestate\",\n    \"twitter\": \"https://twitter.com/realestate\",\n    \"linkedin\": \"https://linkedin.com/company/realestate\",\n    \"instagram\": \"https://instagram.com/realestate\",\n    \"youtube\": \"https://youtube.com/realestate\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/site-settings/social-media",
+              "host": ["{{baseUrl}}"],
+              "path": ["site-settings", "social-media"]
+            },
+            "description": "Update social media links (Admin only)"
+          }
+        },
+        {
+          "name": "Update Language Settings",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"languageSettings\": {\n    \"defaultLanguage\": \"en\",\n    \"supportedLanguages\": [\n      { \"code\": \"en\", \"name\": \"English\", \"direction\": \"ltr\" },\n      { \"code\": \"ar\", \"name\": \"Arabic\", \"direction\": \"rtl\" }\n    ]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/site-settings/language-settings",
+              "host": ["{{baseUrl}}"],
+              "path": ["site-settings", "language-settings"]
+            },
+            "description": "Update language settings (Admin only)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏢 Projects - Public",
+      "description": "Public endpoints for viewing projects",
+      "item": [
+        {
+          "name": "Get All Projects (English)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/site-settings/projects?lang=en",
+              "host": ["{{baseUrl}}"],
+              "path": ["site-settings", "projects"],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "en",
+                  "description": "Language code (en or ar)"
+                }
+              ]
+            },
+            "description": "Get all active projects in English (Public endpoint)"
+          }
+        },
+        {
+          "name": "Get All Projects (Arabic)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/site-settings/projects?lang=ar",
+              "host": ["{{baseUrl}}"],
+              "path": ["site-settings", "projects"],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "ar",
+                  "description": "Language code (en or ar)"
+                }
+              ]
+            },
+            "description": "Get all active projects in Arabic (Public endpoint)"
+          }
+        },
+        {
+          "name": "Get Project by ID (English)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/site-settings/projects/{{projectId}}?lang=en",
+              "host": ["{{baseUrl}}"],
+              "path": ["site-settings", "projects", "{{projectId}}"],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "en",
+                  "description": "Language code (en or ar)"
+                }
+              ]
+            },
+            "description": "Get a specific project by ID in English (Public endpoint)"
+          }
+        },
+        {
+          "name": "Get Project by ID (Arabic)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/site-settings/projects/{{projectId}}?lang=ar",
+              "host": ["{{baseUrl}}"],
+              "path": ["site-settings", "projects", "{{projectId}}"],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "ar",
+                  "description": "Language code (en or ar)"
+                }
+              ]
+            },
+            "description": "Get a specific project by ID in Arabic (Public endpoint)"
+          }
+        },
+        {
+          "name": "Get Projects by Type",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/site-settings/projects/type/{{projectType}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["site-settings", "projects", "type", "{{projectType}}"]
+            },
+            "description": "Get projects by type (Public endpoint)"
+          }
+        },
+        {
+          "name": "Get All Project Types",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/site-settings/project-types",
+              "host": ["{{baseUrl}}"],
+              "path": ["site-settings", "project-types"]
+            },
+            "description": "Get all project types with counts (Public endpoint)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "➕ Projects - Add New",
+      "item": [
+        {
+          "name": "Add New Project (JSON)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"projectType\": \"residential\",\n  \"title\": {\n    \"en\": \"Green Valley Apartments\",\n    \"ar\": \"شقق غرين فالي\"\n  },\n  \"description\": {\n    \"en\": \"Luxury residential complex with modern amenities including swimming pool, gym, and parking.\",\n    \"ar\": \"مجمع سكني فاخر مع وسائل الراحة الحديثة بما في ذلك حمام السباحة والجمنازيوم ووقوف السيارات.\"\n  },\n  \"location\": {\n    \"en\": \"Mumbai, Maharashtra\",\n    \"ar\": \"مومباي، مهاراشترا\"\n  },\n  \"status\": \"Under Construction\",\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/site-settings/projects",
+              "host": ["{{baseUrl}}"],
+              "path": ["site-settings", "projects"]
+            },
+            "description": "Add a new project with multi-language support (Admin only)"
+          }
+        },
+        {
+          "name": "Add New Project with Hero Image (Form-data)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "projectType",
+                  "value": "residential",
+                  "type": "text"
+                },
+                {
+                  "key": "title",
+                  "value": "{\n  \"en\": \"Green Valley Apartments\",\n  \"ar\": \"شقق غرين فالي\"\n}",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "{\n  \"en\": \"Luxury residential complex with modern amenities including swimming pool, gym, and parking.\",\n  \"ar\": \"مجمع سكني فاخر مع وسائل الراحة الحديثة بما في ذلك حمام السباحة والجمنازيوم ووقوف السيارات.\"\n}",
+                  "type": "text"
+                },
+                {
+                  "key": "location",
+                  "value": "{\n  \"en\": \"Mumbai, Maharashtra\",\n  \"ar\": \"مومباي، مهاراشترا\"\n}",
+                  "type": "text"
+                },
+                {
+                  "key": "status",
+                  "value": "Under Construction",
+                  "type": "text"
+                },
+                {
+                  "key": "isActive",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
+                  "key": "heroImage",
+                  "type": "file",
+                  "src": "",
+                  "description": "Project hero image"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/site-settings/projects",
+              "host": ["{{baseUrl}}"],
+              "path": ["site-settings", "projects"]
+            },
+            "description": "Add a new project with hero image and multi-language support (Admin only)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "✏️ Projects - Update",
+      "item": [
+        {
+          "name": "Update Project (JSON)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"projectType\": \"commercial\",\n  \"title\": {\n    \"en\": \"Updated Green Valley Commercial Complex\",\n    \"ar\": \"مجمع غرين فالي التجاري المحدث\"\n  },\n  \"description\": {\n    \"en\": \"Updated luxury commercial complex with modern amenities including conference halls, cafeteria, and parking.\",\n    \"ar\": \"مجمع تجاري فاخر محدث مع وسائل الراحة الحديثة بما في ذلك قاعات المؤتمرات ومقصف ووقوف السيارات.\"\n  },\n  \"location\": {\n    \"en\": \"Delhi, India\",\n    \"ar\": \"دلهي، الهند\"\n  },\n  \"status\": \"Completed\",\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/site-settings/projects/{{projectId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["site-settings", "projects", "{{projectId}}"]
+            },
+            "description": "Update an existing project with multi-language support (Admin only)"
+          }
+        },
+        {
+          "name": "Update Project with Hero Image (Form-data)",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "projectType",
+                  "value": "commercial",
+                  "type": "text"
+                },
+                {
+                  "key": "title",
+                  "value": "{\n  \"en\": \"Updated Green Valley Commercial Complex\",\n  \"ar\": \"مجمع غرين فالي التجاري المحدث\"\n}",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "{\n  \"en\": \"Updated luxury commercial complex with modern amenities including conference halls, cafeteria, and parking.\",\n  \"ar\": \"مجمع تجاري فاخر محدث مع وسائل الراحة الحديثة بما في ذلك قاعات المؤتمرات ومقصف ووقوف السيارات.\"\n}",
+                  "type": "text"
+                },
+                {
+                  "key": "location",
+                  "value": "{\n  \"en\": \"Delhi, India\",\n  \"ar\": \"دلهي، الهند\"\n}",
+                  "type": "text"
+                },
+                {
+                  "key": "status",
+                  "value": "Completed",
+                  "type": "text"
+                },
+                {
+                  "key": "isActive",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
+                  "key": "heroImage",
+                  "type": "file",
+                  "src": "",
+                  "description": "Replace project hero image"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/site-settings/projects/{{projectId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["site-settings", "projects", "{{projectId}}"]
+            },
+            "description": "Update an existing project with hero image and multi-language support (Admin only)"
+          }
+        },
+        {
+          "name": "Update Projects Section Title",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectionTitle\": {\n    \"en\": \"Our Projects\",\n    \"ar\": \"مشاريعنا\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/site-settings/projects/section-title",
+              "host": ["{{baseUrl}}"],
+              "path": ["site-settings", "projects", "section-title"]
+            },
+            "description": "Update the main projects section title with multi-language support (Admin only)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🗑️ Projects - Delete",
+      "item": [
+        {
+          "name": "Delete Project",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/site-settings/projects/{{projectId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["site-settings", "projects", "{{projectId}}"]
+            },
+            "description": "Delete a project and its associated Cloudinary assets (Admin only)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🖼️ Projects - Gallery Management",
+      "item": [
+        {
+          "name": "Add Image to Gallery with Multi-language Caption",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": ""
+                },
+                {
+                  "key": "caption",
+                  "value": "{\n  \"en\": \"Beautiful swimming pool area\",\n  \"ar\": \"منطقة حمام السباحة الجميلة\"\n}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/site-settings/projects/{{projectId}}/gallery",
+              "host": ["{{baseUrl}}"],
+              "path": ["site-settings", "projects", "{{projectId}}", "gallery"]
+            },
+            "description": "Add an image to project gallery with multi-language caption (Admin only)"
+          }
+        },
+        {
+          "name": "Remove Image from Gallery",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/site-settings/projects/{{projectId}}/gallery/{{imageId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["site-settings", "projects", "{{projectId}}", "gallery", "{{imageId}}"]
+            },
+            "description": "Remove an image from project gallery (Admin only)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📰 Blogs Management",
+      "description": "Manage blog posts with multi-language support and Cloudinary image integration",
+      "item": [
+        {
+          "name": "Get All Blogs (English)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/blogs?lang=en",
+              "host": ["{{baseUrl}}"],
+              "path": ["blogs"],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "en",
+                  "description": "Language code (en or ar)"
+                }
+              ]
+            },
+            "description": "Get all published blogs in English (Public endpoint)"
+          }
+        },
+        {
+          "name": "Get All Blogs (Arabic)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/blogs?lang=ar",
+              "host": ["{{baseUrl}}"],
+              "path": ["blogs"],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "ar",
+                  "description": "Language code (en or ar)"
+                }
+              ]
+            },
+            "description": "Get all published blogs in Arabic (Public endpoint)"
+          }
+        },
+        {
+          "name": "Get Blog by ID (English)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/blogs/{{blogId}}?lang=en",
+              "host": ["{{baseUrl}}"],
+              "path": ["blogs", "{{blogId}}"],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "en",
+                  "description": "Language code (en or ar)"
+                }
+              ]
+            },
+            "description": "Get a specific blog by ID in English (Public endpoint)"
+          }
+        },
+        {
+          "name": "Get Blog by ID (Arabic)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/blogs/{{blogId}}?lang=ar",
+              "host": ["{{baseUrl}}"],
+              "path": ["blogs", "{{blogId}}"],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "ar",
+                  "description": "Language code (en or ar)"
+                }
+              ]
+            },
+            "description": "Get a specific blog by ID in Arabic (Public endpoint)"
+          }
+        },
+        {
+          "name": "Create New Blog (Multi-language)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": {\n    \"en\": \"New Blog Post Title\",\n    \"ar\": \"عنوان مدونة جديد\"\n  },\n  \"content\": {\n    \"en\": \"Blog post content goes here...\",\n    \"ar\": \"محتوى مدونة يذهب هنا...\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/blogs",
+              "host": ["{{baseUrl}}"],
+              "path": ["blogs"]
+            },
+            "description": "Create a new blog post with multi-language support (Admin only)"
+          }
+        },
+        {
+          "name": "Create New Blog with Image (Multi-language)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "value": "{\n  \"en\": \"New Blog Post Title\",\n  \"ar\": \"عنوان مدونة جديد\"\n}",
+                  "type": "text"
+                },
+                {
+                  "key": "content",
+                  "value": "{\n  \"en\": \"Blog post content goes here...\",\n  \"ar\": \"محتوى مدونة يذهب هنا...\"\n}",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": "",
+                  "description": "Blog featured image"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/blogs",
+              "host": ["{{baseUrl}}"],
+              "path": ["blogs"]
+            },
+            "description": "Create a new blog post with image and multi-language support (Admin only)"
+          }
+        },
+        {
+          "name": "Update Blog (Multi-language)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": {\n    \"en\": \"Updated Blog Post Title\",\n    \"ar\": \"عنوان مدونة محدثة\"\n  },\n  \"content\": {\n    \"en\": \"Updated blog post content goes here...\",\n    \"ar\": \"محتوى مدونة محدثة يذهب هنا...\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/blogs/{{blogId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["blogs", "{{blogId}}"]
+            },
+            "description": "Update an existing blog post with multi-language support (Admin only)"
+          }
+        },
+        {
+          "name": "Update Blog with Image (Multi-language)",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "value": "{\n  \"en\": \"Updated Blog Post Title\",\n  \"ar\": \"عنوان مدونة محدثة\"\n}",
+                  "type": "text"
+                },
+                {
+                  "key": "content",
+                  "value": "{\n  \"en\": \"Updated blog post content goes here...\",\n  \"ar\": \"محتوى مدونة محدثة يذهب هنا...\"\n}",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": "",
+                  "description": "Replace blog featured image"
+                },
+                {
+                  "key": "isActive",
+                  "value": "true",
+                  "type": "text",
+                  "description": "Blog status"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/blogs/{{blogId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["blogs", "{{blogId}}"]
+            },
+            "description": "Update an existing blog post with image and multi-language support (Admin only)"
+          }
+        },
+        {
+          "name": "Delete Blog",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/blogs/{{blogId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["blogs", "{{blogId}}"]
+            },
+            "description": "Delete a blog post and its associated Cloudinary image (Admin only)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🗞️ News Management",
+      "description": "Manage news posts with multi-language support and Cloudinary image integration",
+      "item": [
+        {
+          "name": "Get All News (English)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/news/getAllNews?lang=en",
+              "host": ["{{baseUrl}}"],
+              "path": ["news", "getAllNews"],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "en",
+                  "description": "Language code (en or ar)"
+                }
+              ]
+            },
+            "description": "Get all published news in English (Public endpoint)"
+          }
+        },
+        {
+          "name": "Get All News (Arabic)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/news/getAllNews?lang=ar",
+              "host": ["{{baseUrl}}"],
+              "path": ["news", "getAllNews"],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "ar",
+                  "description": "Language code (en or ar)"
+                }
+              ]
+            },
+            "description": "Get all published news in Arabic (Public endpoint)"
+          }
+        },
+        {
+          "name": "Get News by ID (English)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/news/getNewsById/{{newsId}}?lang=en",
+              "host": ["{{baseUrl}}"],
+              "path": ["news", "getNewsById", "{{newsId}}"],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "en",
+                  "description": "Language code (en or ar)"
+                }
+              ]
+            },
+            "description": "Get a specific news by ID in English (Public endpoint)"
+          }
+        },
+        {
+          "name": "Get News by ID (Arabic)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/news/getNewsById/{{newsId}}?lang=ar",
+              "host": ["{{baseUrl}}"],
+              "path": ["news", "getNewsById", "{{newsId}}"],
+              "query": [
+                {
+                  "key": "lang",
+                  "value": "ar",
+                  "description": "Language code (en or ar)"
+                }
+              ]
+            },
+            "description": "Get a specific news by ID in Arabic (Public endpoint)"
+          }
+        },
+        {
+          "name": "Create New News (Multi-language)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": {\n    \"en\": \"New News Title\",\n    \"ar\": \"عنوان الأخبار الجديد\"\n  },\n  \"content\": {\n    \"en\": \"News content goes here...\",\n    \"ar\": \"محتوى الأخبار يذهب هنا...\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/news/add-news",
+              "host": ["{{baseUrl}}"],
+              "path": ["news", "add-news"]
+            },
+            "description": "Create a new news post with multi-language support (Admin only)"
+          }
+        },
+        {
+          "name": "Create New News with Image (Multi-language)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "value": "{\n  \"en\": \"New News Title\",\n  \"ar\": \"عنوان الأخبار الجديد\"\n}",
+                  "type": "text"
+                },
+                {
+                  "key": "content",
+                  "value": "{\n  \"en\": \"News content goes here...\",\n  \"ar\": \"محتوى الأخبار يذهب هنا...\"\n}",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": "",
+                  "description": "News featured image"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/news/add-news",
+              "host": ["{{baseUrl}}"],
+              "path": ["news", "add-news"]
+            },
+            "description": "Create a new news post with image and multi-language support (Admin only)"
+          }
+        },
+        {
+          "name": "Update News (Multi-language)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": {\n    \"en\": \"Updated News Title\",\n    \"ar\": \"عنوان الأخبار المحدث\"\n  },\n  \"content\": {\n    \"en\": \"Updated news content goes here...\",\n    \"ar\": \"محتوى الأخبار المحدث يذهب هنا...\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/news/update-news/{{newsId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["news", "update-news", "{{newsId}}"]
+            },
+            "description": "Update an existing news post with multi-language support (Admin only)"
+          }
+        },
+        {
+          "name": "Update News with Image (Multi-language)",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "value": "{\n  \"en\": \"Updated News Title\",\n  \"ar\": \"عنوان الأخبار المحدث\"\n}",
+                  "type": "text"
+                },
+                {
+                  "key": "content",
+                  "value": "{\n  \"en\": \"Updated news content goes here...\",\n  \"ar\": \"محتوى الأخبار المحدث يذهب هنا...\"\n}",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": "",
+                  "description": "Replace news featured image"
+                },
+                {
+                  "key": "isActive",
+                  "value": "true",
+                  "type": "text",
+                  "description": "News status"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/news/update-news/{{newsId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["news", "update-news", "{{newsId}}"]
+            },
+            "description": "Update an existing news post with image and multi-language support (Admin only)"
+          }
+        },
+        {
+          "name": "Delete News",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/news/delete-news/{{newsId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["news", "delete-news", "{{newsId}}"]
+            },
+            "description": "Delete a news post and its associated Cloudinary image (Admin only)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📬 Contact Management",
+      "description": "Manage contact form submissions",
+      "item": [
+        {
+          "name": "Submit Contact Form",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"phone\": \"+1234567890\",\n  \"subject\": \"Property Inquiry\",\n  \"message\": \"I'm interested in learning more about your properties.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/contact",
+              "host": ["{{baseUrl}}"],
+              "path": ["contact"]
+            },
+            "description": "Submit a contact form (Public endpoint)"
+          }
+        },
+        {
+          "name": "Get All Contact Messages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/contact",
+              "host": ["{{baseUrl}}"],
+              "path": ["contact"]
+            },
+            "description": "Get all contact messages (Admin only)"
+          }
+        },
+        {
+          "name": "Get Contact Message by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/contact/{{contactId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["contact", "{{contactId}}"]
+            },
+            "description": "Get a specific contact message by ID (Admin only)"
+          }
+        },
+        {
+          "name": "Delete Contact Message",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/contact/{{contactId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["contact", "{{contactId}}"]
+            },
+            "description": "Delete a contact message (Admin only)"
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Auto-set authorization header if token exists",
+          "const token = pm.collectionVariables.get('adminToken');",
+          "if (token && token.length > 0) {",
+          "    pm.request.headers.add({",
+          "        key: 'Authorization',",
+          "        value: `Bearer ${token}`",
+          "    });",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Auto-save IDs from successful creation responses",
+          "if (pm.response.code === 201) {",
+          "    const response = pm.response.json();",
+          "    ",
+          "    // Save project ID if present",
+          "    if (response.project && response.project._id) {",
+          "        pm.collectionVariables.set('projectId', response.project._id);",
+          "        console.log('📁 Project ID saved:', response.project._id);",
+          "    }",
+          "    ",
+          "    // Save blog ID if present",
+          "    if (response.blog && response.blog._id) {",
+          "        pm.collectionVariables.set('blogId', response.blog._id);",
+          "        console.log('📝 Blog ID saved:', response.blog._id);",
+          "    }",
+          "    ",
+          "    // Save news ID if present",
+          "    if (response.news && response.news._id) {",
+          "        pm.collectionVariables.set('newsId', response.news._id);",
+          "        console.log('📰 News ID saved:', response.news._id);",
+          "    }",
+          "    ",
+          "    // Save contact ID if present",
+          "    if (response.contact && response.contact._id) {",
+          "        pm.collectionVariables.set('contactId', response.contact._id);",
+          "        console.log('📬 Contact ID saved:', response.contact._id);",
+          "    }",
+          "}"
+        ]
+      }
+    }
+  ]
+}
