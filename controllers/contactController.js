@@ -11,15 +11,7 @@ exports.submitContactForm = catchAsyncErrors(async (req, res, next) => {
         return next(new ErrorHandler('Please provide all required fields: name, email, subject, and message', 400));
     }
     
-    // Get client IP address
-    const ipAddress = req.headers['x-forwarded-for'] || 
-                     req.connection.remoteAddress || 
-                     req.socket.remoteAddress ||
-                     (req.connection.socket ? req.connection.socket.remoteAddress : null);
-    
-    // Get user agent
-    const userAgent = req.headers['user-agent'] || '';
-    
+ 
     // Create contact document
     const contactData = {
         name,
@@ -27,8 +19,6 @@ exports.submitContactForm = catchAsyncErrors(async (req, res, next) => {
         phone: phone || '',
         subject,
         message,
-        ipAddress: ipAddress || '',
-        userAgent: userAgent || ''
     };
     
     const contact = await Contact.create(contactData);
