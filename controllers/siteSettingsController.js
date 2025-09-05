@@ -139,9 +139,6 @@ exports.updateHeroSection = catchAsyncErrors(async (req, res, next) => {
     
     let siteSettings = await SiteSettings.getActiveSiteSettings();
     
-    if (!siteSettings) {
-        return next(new ErrorHandler('Site settings not found', 404));
-    }
     
     // Handle hero title update (multi-language)
     if (heroTitleEn !== undefined || heroTitleAr !== undefined) {
@@ -214,10 +211,6 @@ exports.updateAboutUsSection = catchAsyncErrors(async (req, res, next) => {
     } = req.body;
     
     let siteSettings = await SiteSettings.getActiveSiteSettings();
-    
-    if (!siteSettings) {
-        return next(new ErrorHandler('Site settings not found', 404));
-    }
     
     // Handle title update (multi-language)
     if (titleEn !== undefined || titleAr !== undefined) {
@@ -335,10 +328,7 @@ exports.updateAboutUsSection = catchAsyncErrors(async (req, res, next) => {
 // Get all projects
 exports.getAllProjects = catchAsyncErrors(async (req, res, next) => {
     const siteSettings = await SiteSettings.getActiveSiteSettings();
-    
-    if (!siteSettings) {
-        return next(new ErrorHandler('Site settings not found', 404));
-    }
+   
     
     // Get language from query parameter or default to 'en'
     const language = req.query.lang || 'en';
@@ -385,10 +375,7 @@ exports.addProject = catchAsyncErrors(async (req, res, next) => {
     }
     
     const siteSettings = await SiteSettings.getActiveSiteSettings();
-    
-    if (!siteSettings) {
-        return next(new ErrorHandler('Site settings not found', 404));
-    }
+ 
     
     // Prepare project data with multi-language support
     const projectData = {
@@ -452,11 +439,7 @@ exports.updateProject = catchAsyncErrors(async (req, res, next) => {
     } = req.body;
     
     const siteSettings = await SiteSettings.getActiveSiteSettings();
-    
-    if (!siteSettings) {
-        return next(new ErrorHandler('Site settings not found', 404));
-    }
-    
+  
     const project = siteSettings.getProjectById(projectId);
     
     if (!project) {
@@ -519,9 +502,7 @@ exports.deleteProject = catchAsyncErrors(async (req, res, next) => {
     
     const siteSettings = await SiteSettings.getActiveSiteSettings();
     
-    if (!siteSettings) {
-        return next(new ErrorHandler('Site settings not found', 404));
-    }
+    
     
     try {
         // Get the project to delete associated Cloudinary files
@@ -570,10 +551,7 @@ exports.addImageToGallery = catchAsyncErrors(async (req, res, next) => {
     }
     
     const siteSettings = await SiteSettings.getActiveSiteSettings();
-    
-    if (!siteSettings) {
-        return next(new ErrorHandler('Site settings not found', 404));
-    }
+  
     
     try {
         // Upload image to cloudinary
@@ -605,11 +583,7 @@ exports.removeImageFromGallery = catchAsyncErrors(async (req, res, next) => {
     const { projectId, imageId } = req.params;
     
     const siteSettings = await SiteSettings.getActiveSiteSettings();
-    
-    if (!siteSettings) {
-        return next(new ErrorHandler('Site settings not found', 404));
-    }
-    
+  
     try {
         // Get the image to delete from cloudinary
         const project = siteSettings.getProjectById(projectId);
@@ -641,9 +615,7 @@ exports.updateProjectsSectionTitle = catchAsyncErrors(async (req, res, next) => 
     
     const siteSettings = await SiteSettings.getActiveSiteSettings();
     
-    if (!siteSettings) {
-        return next(new ErrorHandler('Site settings not found', 404));
-    }
+  
     
     // Handle section title update (multi-language)
     if (sectionTitleEn !== undefined || sectionTitleAr !== undefined) {
@@ -665,9 +637,6 @@ exports.updateProjectsSectionTitle = catchAsyncErrors(async (req, res, next) => 
 exports.getAllProjectTypes = catchAsyncErrors(async (req, res, next) => {
     const siteSettings = await SiteSettings.getActiveSiteSettings();
     
-    if (!siteSettings) {
-        return next(new ErrorHandler('Site settings not found', 404));
-    }
     
     // Get language from query parameter or default to 'en'
     const language = req.query.lang || 'en';
@@ -700,10 +669,7 @@ exports.getProjectById = catchAsyncErrors(async (req, res, next) => {
     
     const siteSettings = await SiteSettings.getActiveSiteSettings();
     
-    if (!siteSettings) {
-        return next(new ErrorHandler('Site settings not found', 404));
-    }
-    
+ 
     const project = siteSettings.getProjectById(projectId);
     
     if (!project) {
@@ -739,9 +705,6 @@ exports.getProjectById = catchAsyncErrors(async (req, res, next) => {
 exports.getLanguageSettings = catchAsyncErrors(async (req, res, next) => {
     const siteSettings = await SiteSettings.getActiveSiteSettings();
     
-    if (!siteSettings) {
-        return next(new ErrorHandler('Site settings not found', 404));
-    }
     
     const languageSettings = siteSettings.getLanguageSettings();
     
@@ -757,9 +720,7 @@ exports.updateLanguageSettings = catchAsyncErrors(async (req, res, next) => {
     
     let siteSettings = await SiteSettings.getActiveSiteSettings();
     
-    if (!siteSettings) {
-        return next(new ErrorHandler('Site settings not found', 404));
-    }
+    
     
     // Update language settings
     if (defaultLanguage) {
@@ -786,9 +747,7 @@ exports.updateSocialMediaLinks = catchAsyncErrors(async (req, res, next) => {
     
     let siteSettings = await SiteSettings.getActiveSiteSettings();
     
-    if (!siteSettings) {
-        return next(new ErrorHandler('Site settings not found', 404));
-    }
+   
     
     // Update social media links
     if (facebook !== undefined) siteSettings.socialMediaLinks.facebook = facebook;
