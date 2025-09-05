@@ -20,8 +20,9 @@ app.use(express.json({ limit: '50mb' }));app.use(bodyParser.json())
 app.use(fileUpload());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+// Updated CORS configuration to allow requests from the frontend development server
 app.use(cors({
-    origin: ['http://localhost:8020'],
+    origin: ['http://localhost:5173', 'http://localhost:8020'],
     credentials: true
 }));
 app.use(morgan('dev'));

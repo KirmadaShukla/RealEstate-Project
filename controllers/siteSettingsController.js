@@ -191,6 +191,10 @@ exports.updateAboutUsSection = catchAsyncErrors(async (req, res, next) => {
     let { 
         'title[en]': titleEn,
         'title[ar]': titleAr,
+        'ourMission[title][en]': missionTitleEn,
+        'ourMission[title][ar]': missionTitleAr,
+        'ourMission[content][en]': missionContentEn,
+        'ourMission[content][ar]': missionContentAr,
         'ourVision[title][en]': visionTitleEn,
         'ourVision[title][ar]': visionTitleAr,
         'ourVision[content][en]': visionContentEn,
@@ -220,6 +224,33 @@ exports.updateAboutUsSection = catchAsyncErrors(async (req, res, next) => {
             // Upload new image
             const imageResult = await uploadToCloudinary(req.files.aboutImage, 'realestate/about');
             siteSettings.aboutUsSection.image = imageResult;
+        } catch (error) {
+            return next(new ErrorHandler(error.message, 400));
+        }
+    }
+    
+    // Handle mission section updates
+    if (missionTitleEn !== undefined || missionTitleAr !== undefined) {
+        siteSettings.aboutUsSection.ourMission.title.en = missionTitleEn || '';
+        siteSettings.aboutUsSection.ourMission.title.ar = missionTitleAr || '';
+    }
+    
+    if (missionContentEn !== undefined || missionContentAr !== undefined) {
+        siteSettings.aboutUsSection.ourMission.content.en = missionContentEn || '';
+        siteSettings.aboutUsSection.ourMission.content.ar = missionContentAr || '';
+    }
+    
+    // Handle mission image upload
+    if (req.files && req.files.missionImage) {
+        try {
+            // Delete old mission image if exists
+            if (siteSettings.aboutUsSection.ourMission.image && siteSettings.aboutUsSection.ourMission.image.fileId) {
+                await deleteFromCloudinary(siteSettings.aboutUsSection.ourMission.image.fileId);
+            }
+            
+            // Upload new mission image
+            const missionImageResult = await uploadToCloudinary(req.files.missionImage, 'realestate/mission');
+            siteSettings.aboutUsSection.ourMission.image = missionImageResult;
         } catch (error) {
             return next(new ErrorHandler(error.message, 400));
         }

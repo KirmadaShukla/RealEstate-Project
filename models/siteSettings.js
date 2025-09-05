@@ -29,6 +29,20 @@ const siteSettingsSchema = new mongoose.Schema({
       url: String,
       fileId: String
     },
+    ourMission: {
+      title: {
+        en: String,
+        ar: String
+      },
+      content: {
+        en: String,
+        ar: String
+      },
+      image: {
+        url: String,
+        fileId: String
+      }
+    },
     ourVision: {
       title: {
         en: String,
@@ -229,6 +243,11 @@ siteSettingsSchema.methods.getContentInLanguage = function(languageCode) {
         aboutUsSection: {
             title: translateField(settings.aboutUsSection.title),
             image: settings.aboutUsSection.image,
+            ourMission: {
+                title: translateField(settings.aboutUsSection.ourMission.title),
+                content: translateField(settings.aboutUsSection.ourMission.content),
+                image: settings.aboutUsSection.ourMission.image
+            },
             ourVision: {
                 title: translateField(settings.aboutUsSection.ourVision.title),
                 content: translateField(settings.aboutUsSection.ourVision.content),
