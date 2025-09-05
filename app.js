@@ -22,7 +22,7 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 // Updated CORS configuration to allow requests from the frontend development server
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:8020'],
+    origin: ['http://localhost:5173', 'http://localhost:8020','https://osus-reenacted-glide.vercel.app'],
     credentials: true
 }));
 app.use(morgan('dev'));
