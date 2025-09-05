@@ -56,6 +56,20 @@ const siteSettingsSchema = new mongoose.Schema({
         url: String,
         fileId: String
       }
+    },
+    ourStory: {
+      title: {
+        en: String,
+        ar: String
+      },
+      content: {
+        en: String,
+        ar: String
+      },
+      image: {
+        url: String,
+        fileId: String
+      }
     }
   },
   projectsSection: {
@@ -236,48 +250,55 @@ siteSettingsSchema.methods.getContentInLanguage = function(languageCode) {
     
     // Translate the relevant sections
     const translatedSettings = {
-        heroSection: {
+        heroSection: settings.heroSection ? {
             heroVideo: settings.heroSection.heroVideo,
-            heroTitle: translateField(settings.heroSection.heroTitle)
-        },
-        aboutUsSection: {
+            heroTitle: translateField(settings.heroSection.heroTitle),
+            heroSubtitle: translateField(settings.heroSection.heroSubtitle),
+            heroDescription: translateField(settings.heroSection.heroDescription)
+        } : {},
+        aboutUsSection: settings.aboutUsSection ? {
             title: translateField(settings.aboutUsSection.title),
             image: settings.aboutUsSection.image,
-            ourMission: {
+            ourMission: settings.aboutUsSection.ourMission ? {
                 title: translateField(settings.aboutUsSection.ourMission.title),
                 content: translateField(settings.aboutUsSection.ourMission.content),
                 image: settings.aboutUsSection.ourMission.image
-            },
-            ourVision: {
+            } : {},
+            ourVision: settings.aboutUsSection.ourVision ? {
                 title: translateField(settings.aboutUsSection.ourVision.title),
                 content: translateField(settings.aboutUsSection.ourVision.content),
                 image: settings.aboutUsSection.ourVision.image
-            }
-        },
-        projectsSection: {
+            } : {},
+            ourStory: settings.aboutUsSection.ourStory ? {
+                title: translateField(settings.aboutUsSection.ourStory.title),
+                content: translateField(settings.aboutUsSection.ourStory.content),
+                image: settings.aboutUsSection.ourStory.image
+            } : {}
+        } : {},
+        projectsSection: settings.projectsSection ? {
             sectionTitle: translateField(settings.projectsSection.sectionTitle),
-            projects: settings.projectsSection.projects.map(project => ({
+            projects: settings.projectsSection.projects ? settings.projectsSection.projects.map(project => ({
                 ...project,
                 title: translateField(project.title),
                 description: translateField(project.description),
                 location: translateField(project.location),
-                gallery: project.gallery.map(image => ({
+                gallery: project.gallery ? project.gallery.map(image => ({
                     ...image,
                     caption: translateField(image.caption)
-                }))
-            }))
-        },
-        leadershipSection: {
+                })) : []
+            })) : []
+        } : {},
+        leadershipSection: settings.leadershipSection ? {
             sectionTitle: translateField(settings.leadershipSection.sectionTitle),
             description: translateField(settings.leadershipSection.description)
-        },
-        contactInfo: {
-            address: translateField(settings.contactInfo?.address),
-            phone: settings.contactInfo?.phone || '',
-            email: settings.contactInfo?.email || '',
-            workingHours: translateField(settings.contactInfo?.workingHours)
-        },
-        socialMediaLinks: settings.socialMediaLinks
+        } : {},
+        contactInfo: settings.contactInfo ? {
+            address: translateField(settings.contactInfo.address),
+            phone: settings.contactInfo.phone || '',
+            email: settings.contactInfo.email || '',
+            workingHours: translateField(settings.contactInfo.workingHours)
+        } : {},
+        socialMediaLinks: settings.socialMediaLinks || {}
     };
     
     return translatedSettings;

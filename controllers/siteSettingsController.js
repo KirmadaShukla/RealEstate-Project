@@ -17,9 +17,17 @@ exports.getSiteSettings = catchAsyncErrors(async (req, res, next) => {
             },
             aboutUsSection: { 
                 title: { en: 'About Us', ar: 'عنّا' },
+                ourMission: {
+                    title: { en: 'Our Mission', ar: 'مهمّتنا' },
+                    content: { en: 'To provide exceptional real estate services', ar: 'توفير خدمات عقارية استثنائية' }
+                },
                 ourVision: { 
                     title: { en: 'Our Vision', ar: 'رؤيتنا' },
                     content: { en: 'To be the leading real estate company', ar: 'أن نكون الشركة الرائدة في مجال العقارات' }
+                },
+                ourStory: {
+                    title: { en: 'Our Story', ar: 'قصّتنا' },
+                    content: { en: 'Our journey began with a vision to transform the real estate landscape', ar: 'بدأت رحلتنا مع رؤية لتحويل مشهد العقارات' }
                 }
             },
             socialMediaLinks: {
@@ -125,8 +133,8 @@ exports.updateHeroSection = catchAsyncErrors(async (req, res, next) => {
         'heroTitle[ar]': heroTitleAr,
         'heroSubtitle[en]': heroSubtitleEn,
         'heroSubtitle[ar]': heroSubtitleAr,
-        'heroDescription[en]': heroDescriptionEn,
-        'heroDescription[ar]': heroDescriptionAr
+        'description[en]': heroDescriptionEn,
+        'description[ar]': heroDescriptionAr
     } = req.body;
     
     let siteSettings = await SiteSettings.getActiveSiteSettings();
@@ -198,7 +206,11 @@ exports.updateAboutUsSection = catchAsyncErrors(async (req, res, next) => {
         'ourVision[title][en]': visionTitleEn,
         'ourVision[title][ar]': visionTitleAr,
         'ourVision[content][en]': visionContentEn,
-        'ourVision[content][ar]': visionContentAr
+        'ourVision[content][ar]': visionContentAr,
+        'ourStory[title][en]': storyTitleEn,
+        'ourStory[title][ar]': storyTitleAr,
+        'ourStory[content][en]': storyContentEn,
+        'ourStory[content][ar]': storyContentAr
     } = req.body;
     
     let siteSettings = await SiteSettings.getActiveSiteSettings();
@@ -278,6 +290,33 @@ exports.updateAboutUsSection = catchAsyncErrors(async (req, res, next) => {
             // Upload new vision image
             const visionImageResult = await uploadToCloudinary(req.files.visionImage, 'realestate/vision');
             siteSettings.aboutUsSection.ourVision.image = visionImageResult;
+        } catch (error) {
+            return next(new ErrorHandler(error.message, 400));
+        }
+    }
+    
+    // Handle story section updates
+    if (storyTitleEn !== undefined || storyTitleAr !== undefined) {
+        siteSettings.aboutUsSection.ourStory.title.en = storyTitleEn || '';
+        siteSettings.aboutUsSection.ourStory.title.ar = storyTitleAr || '';
+    }
+    
+    if (storyContentEn !== undefined || storyContentAr !== undefined) {
+        siteSettings.aboutUsSection.ourStory.content.en = storyContentEn || '';
+        siteSettings.aboutUsSection.ourStory.content.ar = storyContentAr || '';
+    }
+    
+    // Handle story image upload
+    if (req.files && req.files.storyImage) {
+        try {
+            // Delete old story image if exists
+            if (siteSettings.aboutUsSection.ourStory.image && siteSettings.aboutUsSection.ourStory.image.fileId) {
+                await deleteFromCloudinary(siteSettings.aboutUsSection.ourStory.image.fileId);
+            }
+            
+            // Upload new story image
+            const storyImageResult = await uploadToCloudinary(req.files.storyImage, 'realestate/story');
+            siteSettings.aboutUsSection.ourStory.image = storyImageResult;
         } catch (error) {
             return next(new ErrorHandler(error.message, 400));
         }
