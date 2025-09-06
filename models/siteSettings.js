@@ -78,7 +78,10 @@ const siteSettingsSchema = new mongoose.Schema({
       ar: String
     },
     projects: [{
-      projectType: String,
+      projectType: {
+        en: String,
+        ar: String
+      },
       title: {
         en: String,
         ar: String
@@ -91,10 +94,6 @@ const siteSettingsSchema = new mongoose.Schema({
         en: String,
         ar: String
       },
-      status: String,
-      year: String,
-      units: Number,
-      area: String,
       isActive: {
         type: Boolean,
         default: true
@@ -188,9 +187,53 @@ siteSettingsSchema.methods.getProjectById = function(projectId) {
     return this.projectsSection.projects.find(project => project._id.toString() === projectId);
 };
 
+// Method to remove a project by ID
+siteSettingsSchema.methods.removeProject = function(projectId) {
+    const projectIndex = this.projectsSection.projects.findIndex(project => project._id.toString() === projectId);
+    if (projectIndex !== -1) {
+        this.projectsSection.projects.splice(projectIndex, 1);
+        return this.save();
+    }
+    throw new Error('Project not found');
+};
+
+// Method to remove an image from project gallery
+siteSettingsSchema.methods.removeFromProjectGallery = function(projectId, imageId) {
+    const project = this.getProjectById(projectId);
+    if (project) {
+        const imageIndex = project.gallery.findIndex(image => image._id.toString() === imageId);
+        if (imageIndex !== -1) {
+            project.gallery.splice(imageIndex, 1);
+            return this.save();
+        }
+    }
+    throw new Error('Project or image not found');
+};
+
+// Method to add an image to project gallery
+siteSettingsSchema.methods.addToProjectGallery = function(projectId, imageData) {
+    const project = this.getProjectById(projectId);
+    if (project) {
+        project.gallery.push(imageData);
+        return this.save();
+    }
+    throw new Error('Project not found');
+};
+
 // Method to get projects by type (returns all projects of type, regardless of active status)
 siteSettingsSchema.methods.getProjectsByType = function(projectType) {
-    return this.projectsSection.projects.filter(project => project.projectType === projectType);
+    // Filter projects where the project type matches the provided type (in either en or ar)
+    return this.projectsSection.projects.filter(project => {
+        // Handle both string and object project types
+        if (typeof project.projectType === 'string') {
+            return project.projectType === projectType;
+        }
+        // Handle object project types with en/ar properties
+        if (project.projectType && typeof project.projectType === 'object') {
+            return project.projectType.en === projectType || project.projectType.ar === projectType;
+        }
+        return false;
+    });
 };
 
 // Method to add a new project

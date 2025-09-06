@@ -96,6 +96,9 @@ exports.getProjectsByType = catchAsyncErrors(async (req, res, next) => {
     
     // Get content in the requested language (no need to filter by active status anymore)
     const translatedProjects = projects.map(project => {
+        // Convert mongoose document to plain object to remove internal properties
+        const projectObj = project.toObject ? project.toObject() : project;
+        
         // Helper function to get content in specific language
         const translateField = (field) => {
             if (field && typeof field === 'object' && field.hasOwnProperty('en') && field.hasOwnProperty('ar')) {
@@ -105,14 +108,17 @@ exports.getProjectsByType = catchAsyncErrors(async (req, res, next) => {
         };
         
         return {
-            ...project,
-            title: translateField(project.title),
-            description: translateField(project.description),
-            location: translateField(project.location),
-            gallery: project.gallery ? project.gallery.map(image => ({
+            _id: projectObj._id,
+            projectType: translateField(projectObj.projectType),
+            title: translateField(projectObj.title),
+            description: translateField(projectObj.description),
+            location: translateField(projectObj.location),
+            heroImage: projectObj.heroImage,
+            gallery: projectObj.gallery ? projectObj.gallery.map(image => ({
                 ...image,
                 caption: translateField(image.caption)
-            })) : []
+            })) : [],
+            year: projectObj.year
         };
     });
     
@@ -130,8 +136,8 @@ exports.updateHeroSection = catchAsyncErrors(async (req, res, next) => {
         'heroTitle[ar]': heroTitleAr,
         'heroSubtitle[en]': heroSubtitleEn,
         'heroSubtitle[ar]': heroSubtitleAr,
-        'description[en]': heroDescriptionEn,
-        'description[ar]': heroDescriptionAr
+        'heroDescription[en]': heroDescriptionEn,
+        'heroDescription[ar]': heroDescriptionAr
     } = req.body;
     
     let siteSettings = await SiteSettings.getActiveSiteSettings();
@@ -329,16 +335,29 @@ exports.getAllProjects = catchAsyncErrors(async (req, res, next) => {
     
     // Get ALL projects (both active and inactive) and translate content
     const projects = siteSettings.projectsSection.projects;
-    const translatedProjects = projects.map(project => ({
-        ...project.toObject(),
-        title: project.title[language] || project.title.en || '',
-        description: project.description[language] || project.description.en || '',
-        location: project.location[language] || project.location.en || '',
-        gallery: project.gallery.map(image => ({
-            ...image,
-            caption: image.caption[language] || image.caption.en || ''
-        }))
-    }));
+    const translatedProjects = projects.map(project => {
+        // Convert mongoose document to plain object to remove internal properties
+        const projectObj = project.toObject ? project.toObject() : project;
+        
+        return {
+            _id: projectObj._id,
+            projectType: projectObj.projectType[language] || projectObj.projectType.en || projectObj.projectType,
+            title: projectObj.title[language] || projectObj.title.en || '',
+            description: projectObj.description[language] || projectObj.description.en || '',
+            location: projectObj.location[language] || projectObj.location.en || '',
+            status: projectObj.status,
+            isActive: projectObj.isActive,
+            heroImage: projectObj.heroImage,
+            gallery: projectObj.gallery ? projectObj.gallery.map(image => ({
+                ...image,
+                caption: image.caption[language] || image.caption.en || ''
+            })) : [],
+            units: projectObj.units,
+            area: projectObj.area,
+            year: projectObj.year
+        };
+    });
+    
     res.status(200).json({
         success: true,
         projects: translatedProjects
@@ -349,7 +368,8 @@ exports.getAllProjects = catchAsyncErrors(async (req, res, next) => {
 exports.addProject = catchAsyncErrors(async (req, res, next) => {
     // Extract fields with bracket notation for multilingual support
     let { 
-        projectType,
+        'projectType[en]': projectTypeEn,
+        'projectType[ar]': projectTypeAr,
         'title[en]': titleEn, 
         'title[ar]': titleAr, 
         'description[en]': descriptionEn, 
@@ -360,7 +380,7 @@ exports.addProject = catchAsyncErrors(async (req, res, next) => {
         isActive
     } = req.body;
     
-    if (!projectType) {
+    if (!projectTypeEn && !projectTypeAr) {
         return next(new ErrorHandler('Project type is required', 400));
     }
     
@@ -373,7 +393,10 @@ exports.addProject = catchAsyncErrors(async (req, res, next) => {
     
     // Prepare project data with multi-language support
     const projectData = {
-        projectType,
+        projectType: {
+            en: projectTypeEn || '',
+            ar: projectTypeAr || ''
+        },
         title: {
             en: titleEn || '',
             ar: titleAr || ''
@@ -394,7 +417,7 @@ exports.addProject = catchAsyncErrors(async (req, res, next) => {
     // Handle hero image upload
     if (req.files && req.files.heroImage) {
         try {
-            const heroImageResult = await uploadToCloudinary(req.files.heroImage, `realestate/projects/${projectType}`);
+            const heroImageResult = await uploadToCloudinary(req.files.heroImage, `realestate/projects/${projectTypeEn || projectTypeAr}`);
             projectData.heroImage = heroImageResult;
         } catch (error) {
             return next(new ErrorHandler(error.message, 400));
@@ -421,7 +444,8 @@ exports.updateProject = catchAsyncErrors(async (req, res, next) => {
     const { projectId } = req.params;
     // Extract fields with bracket notation for multilingual support
     let { 
-        projectType,
+        'projectType[en]': projectTypeEn,
+        'projectType[ar]': projectTypeAr,
         'title[en]': titleEn, 
         'title[ar]': titleAr, 
         'description[en]': descriptionEn, 
@@ -441,7 +465,10 @@ exports.updateProject = catchAsyncErrors(async (req, res, next) => {
     }
     
     // Update text fields with multi-language support only if they're provided
-    if (projectType !== undefined) project.projectType = projectType;
+    if (projectTypeEn !== undefined || projectTypeAr !== undefined) {
+        project.projectType.en = projectTypeEn || '';
+        project.projectType.ar = projectTypeAr || '';
+    }
     
     if (titleEn !== undefined || titleAr !== undefined) {
         project.title.en = titleEn || '';
@@ -470,7 +497,7 @@ exports.updateProject = catchAsyncErrors(async (req, res, next) => {
             }
             
             // Upload new hero image
-            const heroImageResult = await uploadToCloudinary(req.files.heroImage, `realestate/projects/${project.projectType}`);
+            const heroImageResult = await uploadToCloudinary(req.files.heroImage, `realestate/projects/${project.projectType.en || project.projectType.ar}`);
             project.heroImage = heroImageResult;
         } catch (error) {
             return next(new ErrorHandler(error.message, 400));
@@ -663,7 +690,6 @@ exports.getProjectById = catchAsyncErrors(async (req, res, next) => {
     
     const siteSettings = await SiteSettings.getActiveSiteSettings();
     
- 
     const project = siteSettings.getProjectById(projectId);
     
     if (!project) {
@@ -673,16 +699,26 @@ exports.getProjectById = catchAsyncErrors(async (req, res, next) => {
     // Get language from query parameter or default to 'en'
     const language = req.query.lang || 'en';
     
+    // Convert mongoose document to plain object to remove internal properties
+    const projectObj = project.toObject ? project.toObject() : project;
+    
     // Translate project content
     const translatedProject = {
-        ...project.toObject(),
-        title: project.title[language] || project.title.en || '',
-        description: project.description[language] || project.description.en || '',
-        location: project.location[language] || project.location.en || '',
-        gallery: project.gallery.map(image => ({
+        _id: projectObj._id,
+        projectType: projectObj.projectType[language] || projectObj.projectType.en || projectObj.projectType,
+        title: projectObj.title[language] || projectObj.title.en || '',
+        description: projectObj.description[language] || projectObj.description.en || '',
+        location: projectObj.location[language] || projectObj.location.en || '',
+        status: projectObj.status,
+        isActive: projectObj.isActive,
+        heroImage: projectObj.heroImage,
+        gallery: projectObj.gallery ? projectObj.gallery.map(image => ({
             ...image,
             caption: image.caption[language] || image.caption.en || ''
-        }))
+        })) : [],
+        units: projectObj.units,
+        area: projectObj.area,
+        year: projectObj.year
     };
     
     res.status(200).json({
