@@ -91,14 +91,11 @@ exports.getProjectsByType = catchAsyncErrors(async (req, res, next) => {
         return next(new ErrorHandler('Site settings not found', 404));
     }
     
-    // Get projects by type using the model method
+    // Get projects by type using the model method (now returns all projects of type, regardless of active status)
     const projects = siteSettings.getProjectsByType(projectType);
     
-    // Filter to only include active projects
-    const activeProjects = projects.filter(project => project.isActive !== false);
-    
-    // Get content in the requested language
-    const translatedProjects = activeProjects.map(project => {
+    // Get content in the requested language (no need to filter by active status anymore)
+    const translatedProjects = projects.map(project => {
         // Helper function to get content in specific language
         const translateField = (field) => {
             if (field && typeof field === 'object' && field.hasOwnProperty('en') && field.hasOwnProperty('ar')) {
@@ -328,13 +325,10 @@ exports.updateAboutUsSection = catchAsyncErrors(async (req, res, next) => {
 // Get all projects
 exports.getAllProjects = catchAsyncErrors(async (req, res, next) => {
     const siteSettings = await SiteSettings.getActiveSiteSettings();
-   
-    
-    // Get language from query parameter or default to 'en'
     const language = req.query.lang || 'en';
     
-    // Get active projects and translate content
-    const projects = siteSettings.getActiveProjects();
+    // Get ALL projects (both active and inactive) and translate content
+    const projects = siteSettings.projectsSection.projects;
     const translatedProjects = projects.map(project => ({
         ...project.toObject(),
         title: project.title[language] || project.title.en || '',
@@ -674,10 +668,6 @@ exports.getProjectById = catchAsyncErrors(async (req, res, next) => {
     
     if (!project) {
         return next(new ErrorHandler('Project not found', 404));
-    }
-    
-    if (!project.isActive) {
-        return next(new ErrorHandler('Project is not active', 404));
     }
     
     // Get language from query parameter or default to 'en'

@@ -188,7 +188,7 @@ siteSettingsSchema.methods.getProjectById = function(projectId) {
     return this.projectsSection.projects.find(project => project._id.toString() === projectId);
 };
 
-// Method to get projects by type
+// Method to get projects by type (returns all projects of type, regardless of active status)
 siteSettingsSchema.methods.getProjectsByType = function(projectType) {
     return this.projectsSection.projects.filter(project => project.projectType === projectType);
 };
