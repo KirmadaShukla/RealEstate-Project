@@ -50,7 +50,6 @@ exports.addNews = catchAsyncErrors(async (req, res, next) => {
         'content[en]': contentEn, 
         'content[ar]': contentAr,
         date, 
-        isActive 
     } = req.body;
     
     // Validate input - we expect title and content in both languages
@@ -69,7 +68,6 @@ exports.addNews = catchAsyncErrors(async (req, res, next) => {
             ar: contentAr || ''
         },
         author: req.id, // Assuming req.id contains the admin ID from auth middleware
-        isActive: isActive === 'true' || isActive === true // Handle boolean conversion
     };
     
     // Handle custom date (if provided)
@@ -109,7 +107,6 @@ exports.updateNews = catchAsyncErrors(async (req, res, next) => {
         'content[en]': contentEn, 
         'content[ar]': contentAr,
         date, 
-        isActive 
     } = req.body;
     
     let news = await News.findById(id);
@@ -129,7 +126,6 @@ exports.updateNews = catchAsyncErrors(async (req, res, next) => {
         news.content.ar = contentAr || '';
     }
     
-    if (isActive !== undefined) news.isActive = isActive === 'true' || isActive === true;
     
     // Handle image update
     if (req.files && req.files.image) {

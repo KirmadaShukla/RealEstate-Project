@@ -107,7 +107,6 @@ exports.updateBlog = catchAsyncErrors(async (req, res, next) => {
         'content[en]': contentEn, 
         'content[ar]': contentAr,
         date, 
-        isActive 
     } = req.body;
     
     let blog = await Blog.findById(id);
@@ -127,7 +126,6 @@ exports.updateBlog = catchAsyncErrors(async (req, res, next) => {
         blog.content.ar = contentAr || '';
     }
     
-    if (isActive !== undefined) blog.isActive = isActive === 'true' || isActive === true;
     
     // Handle image update
     if (req.files && req.files.image) {
